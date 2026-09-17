@@ -81,7 +81,7 @@ export declare class HighlightControlViewModel implements Updatable, Serializabl
     canShowCosets(subgroopId: number, side: sides): boolean;
     /**
     ```
-    ### Receiving and pushing updates to/from this.#model
+    ### Receiving and pushing updates to/from this.model
     ```js
      */
     updateModel(field: string, value: unknown): void;

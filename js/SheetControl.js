@@ -39,17 +39,15 @@ export function addControl(sheetControlElement, sheetModelProxy, sheetViewModel)
 ```javascript
  */
 class ViewModel {
-    #model;
-    #sheetViewModel;
-    #view;
+    model;
+    sheetViewModel;
+    view;
     constructor(sheetModelProxy, sheetViewModel) {
-        this.#model = sheetModelProxy;
-        this.#sheetViewModel = sheetViewModel;
+        this.model = sheetModelProxy;
+        this.sheetViewModel = sheetViewModel;
     }
-    get view() { return this.#view; }
-    set view(view) { this.#view = view; }
-    viewportOrigin() { return this.#sheetViewModel.viewportOrigin(); }
-    viewportScale() { return this.#sheetViewModel.viewportScale(); }
+    viewportOrigin() { return this.sheetViewModel.viewportOrigin(); }
+    viewportScale() { return this.sheetViewModel.viewportScale(); }
     addElement(className, groupURL) {
         const { x, y } = this.viewportOrigin();
         const scale = this.viewportScale();
@@ -80,23 +78,23 @@ class ViewModel {
                 };
                 break;
         }
-        this.#model.addObjectAsElement(element, className);
+        this.model.addObjectAsElement(element, className);
     }
     toJSON() {
-        return this.#model.toJSON();
+        return this.model.toJSON();
     }
     fromJSON(json) {
-        this.#model.fromJSON(json);
+        this.model.fromJSON(json);
     }
     clearSheet() {
-        this.#model.sheetElements.clear();
+        this.model.sheetElements.clear();
     }
     async loadSheet(sheetName) {
         const jsonObject = (await getStoredSheet(sheetName)).sheet;
-        this.#model.fromJSON(jsonObject);
+        this.model.fromJSON(jsonObject);
     }
     saveSheet(sheetName) {
-        saveStoredSheet(sheetName, { version: CURRENT_FORMAT_VERSION, sheet: this.#model.toJSON() });
+        saveStoredSheet(sheetName, { version: CURRENT_FORMAT_VERSION, sheet: this.model.toJSON() });
     }
     async deleteSheet(sheetName) {
         await removeStoredSheet(sheetName);

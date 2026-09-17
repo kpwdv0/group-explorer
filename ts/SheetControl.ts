@@ -52,20 +52,17 @@ export function addControl (
 ```javascript
  */
 class ViewModel {
-   #model: SheetModel
-   #sheetViewModel: SheetViewModel
-   #view!: View
+   private model: SheetModel
+   private sheetViewModel: SheetViewModel
+   view!: View
 
    constructor (sheetModelProxy: SheetModel, sheetViewModel: SheetViewModel) {
-      this.#model = sheetModelProxy
-      this.#sheetViewModel = sheetViewModel
+      this.model = sheetModelProxy
+      this.sheetViewModel = sheetViewModel
    }
 
-   get view () { return this.#view }
-   set view (view) { this.#view = view }
-
-   viewportOrigin () { return this.#sheetViewModel.viewportOrigin() }
-   viewportScale () { return this.#sheetViewModel.viewportScale() }
+   viewportOrigin () { return this.sheetViewModel.viewportOrigin() }
+   viewportScale () { return this.sheetViewModel.viewportScale() }
 
    addElement (className: string, groupURL: string) {
       const {x, y} = this.viewportOrigin()
@@ -99,28 +96,28 @@ class ViewModel {
             }
             break
       }
-      this.#model.addObjectAsElement(element as unknown as SheetJSON, className as keyof ConcreteSheetTypes)
+      this.model.addObjectAsElement(element as unknown as SheetJSON, className as keyof ConcreteSheetTypes)
    }
 
    toJSON () {
-      return this.#model.toJSON()
+      return this.model.toJSON()
    }
 
    fromJSON (json: string | SheetJSON[]) {
-      this.#model.fromJSON(json)
+      this.model.fromJSON(json)
    }
 
    clearSheet () {
-      this.#model.sheetElements.clear()
+      this.model.sheetElements.clear()
    }
 
    async loadSheet (sheetName: string) {
       const jsonObject = ((await getStoredSheet(sheetName)) as VersionedSheet).sheet
-      this.#model.fromJSON(jsonObject)
+      this.model.fromJSON(jsonObject)
    }
 
    saveSheet (sheetName: string) {
-      saveStoredSheet(sheetName, {version: CURRENT_FORMAT_VERSION, sheet: this.#model.toJSON()})
+      saveStoredSheet(sheetName, {version: CURRENT_FORMAT_VERSION, sheet: this.model.toJSON()})
    }
 
    async deleteSheet (sheetName: string) {

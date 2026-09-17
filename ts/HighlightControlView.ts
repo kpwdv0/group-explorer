@@ -312,29 +312,29 @@ export class HighlightControlView {
        </style>
        <div id="subset-page" class="box stack-08em fill-v scrollable">
           <details open id="subgroups">
-             <summary><span class="menu-label" data-action2="this.#showHeaderMenu(event)"
+             <summary><span class="menu-label" data-action2="this.showHeaderMenu(event)"
                 >Subgroups</span>
              </summary>
              <ul></ul>
           </details>
 
           <details open id="subsets">
-             <summary><span class="menu-label" data-action2="this.#showHeaderMenu(event)"
+             <summary><span class="menu-label" data-action2="this.showHeaderMenu(event)"
                 >User-defined subsets</span>
              </summary>
              <ul>
-                <li class="placeholder" data-action="this.#showHeaderMenu(event)"
-                   data-action2="this.#showHeaderMenu(event)"></li>
+                <li class="placeholder" data-action="this.showHeaderMenu(event)"
+                   data-action2="this.showHeaderMenu(event)"></li>
              </ul>
           </details>
 
           <details open id="partitions">
-             <summary><span class="menu-label" data-action2="this.#showHeaderMenu(event)"
+             <summary><span class="menu-label" data-action2="this.showHeaderMenu(event)"
                 >Partitions</span>
              </summary>
              <ul>
-                <li class="placeholder" data-action="this.#showHeaderMenu(event)"
-                   data-action2="this.#showHeaderMenu(event)"></li>
+                <li class="placeholder" data-action="this.showHeaderMenu(event)"
+                   data-action2="this.showHeaderMenu(event)"></li>
              </ul>
           </details>
        </div>`

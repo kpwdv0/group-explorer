@@ -289,7 +289,7 @@ export class HighlightControlViewModel {
     }
     /**
     ```
-    ### Receiving and pushing updates to/from this.#model
+    ### Receiving and pushing updates to/from this.model
     ```js
      */
     updateModel(field, value) {

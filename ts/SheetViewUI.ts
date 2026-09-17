@@ -70,7 +70,7 @@ export function init (viewModel: SheetViewModel.SheetViewModel, displayElement: 
 class SheetEventUI {
    viewModel: SheetViewModel.SheetViewModel
    rootElement: HTMLElement
-   #redrawTimer: Maybe<TimeoutID> = null
+   private redrawTimer: Maybe<TimeoutID> = null
 
    constructor (viewModel: SheetViewModel.SheetViewModel, rootElement: HTMLElement) {
       this.viewModel = viewModel
@@ -277,8 +277,8 @@ class SheetEventUI {
    // For operations that may be performed repeatedly in rapid succession, like zoom and pan,
    // don't attempt to redraw the sheet on every event, but only periodically
    scheduleRedraw () {
-      if (this.#redrawTimer != null) {
-         window.clearTimeout(this.#redrawTimer)
+      if (this.redrawTimer != null) {
+         window.clearTimeout(this.redrawTimer)
       }
 
       const allVisualizerElements = (Array
@@ -286,9 +286,9 @@ class SheetEventUI {
          .filter((el) => 'isVisualizer' in el) as SheetViewModel.VisualizerElement[])
          .sort((a, b) => (a.group.URL == b.group.URL) ? 0 : (a.group.URL < b.group.URL) ? -1 : 1)
 
-      this.#redrawTimer = window.setTimeout((els: typeof allVisualizerElements) => {
+      this.redrawTimer = window.setTimeout((els: typeof allVisualizerElements) => {
          els.forEach((el) => el.viewElement?.redraw())
-         this.#redrawTimer = null
+         this.redrawTimer = null
       }, 250, allVisualizerElements)
    }
 
@@ -305,7 +305,7 @@ class SheetEventUI {
    }
 
    moveForward (modelElement: SheetViewModel.NodeElement) {
-      const above = this.#nodesSortedByZ().find((el) => el.z > modelElement.z)
+      const above = this.nodesSortedByZ().find((el) => el.z > modelElement.z)
       if (above != null) {
          ;[modelElement.z, above.z] = [above.z, modelElement.z]
          modelElement.viewElement?.updateZ()
@@ -314,7 +314,7 @@ class SheetEventUI {
    }
 
    moveBackward (modelElement: SheetViewModel.NodeElement) {
-      const below = this.#nodesSortedByZ().reverse().find((el) => el.z < modelElement.z)
+      const below = this.nodesSortedByZ().reverse().find((el) => el.z < modelElement.z)
       if (below != null) {
          ;[modelElement.z, below.z] = [below.z, modelElement.z]
          modelElement.viewElement?.updateZ()
@@ -323,7 +323,7 @@ class SheetEventUI {
    }
 
    moveToFront (modelElement: SheetViewModel.NodeElement) {
-      const nodes = this.#nodesSortedByZ()
+      const nodes = this.nodesSortedByZ()
       const maxZ = nodes[nodes.length - 1]?.z ?? modelElement.z
       if (modelElement.z < maxZ) {
          modelElement.z = maxZ + 2
@@ -332,7 +332,7 @@ class SheetEventUI {
    }
 
    moveToBack (modelElement: SheetViewModel.NodeElement) {
-      const nodes = this.#nodesSortedByZ()
+      const nodes = this.nodesSortedByZ()
       const minZ = nodes[0]?.z ?? modelElement.z
       if (modelElement.z > minZ) {
          modelElement.z = Math.max(2, minZ - 2)
@@ -340,7 +340,7 @@ class SheetEventUI {
       }
    }
 
-   #nodesSortedByZ (): SheetViewModel.NodeElement[] {
+   private nodesSortedByZ (): SheetViewModel.NodeElement[] {
       return (Array.from(this.viewModel.modelElements.values())
          .filter((el) => 'isNode' in el) as SheetViewModel.NodeElement[])
          .sort((a, b) => a.z - b.z)

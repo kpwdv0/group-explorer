@@ -67,7 +67,7 @@ function clickHandler(event) {
     }
 }
 class ViewModel {
-    #model;
+    _model;
     rootElement;
     handlers = [];
     diagramName = null; // null => generate diagram
@@ -76,7 +76,7 @@ class ViewModel {
     rightMultiply = true;
     chunkSubgroupIndex = null; // null => no chunking
     constructor(rootElement, model) {
-        this.#model = model;
+        this._model = model;
         this.rootElement = rootElement;
         if (new URL(window.location.href).searchParams.get('SheetEditor') != null) { // SheetEditor startup
             this.setFromJSON(model.diagramControl);
@@ -127,10 +127,10 @@ class ViewModel {
         return this;
     }
     get group() {
-        return this.#model.group;
+        return this._model.group;
     }
     get model() {
-        return this.#model;
+        return this._model;
     }
     // State accessors for View
     get generatesFromStrategy() {
@@ -170,11 +170,11 @@ class ViewModel {
         const allGenerators = [];
         const newChoices = choices.map((strategy) => {
             allGenerators.push(strategy.generator);
-            return { subgroupIndex: this.#findSubgroupIndex(allGenerators), allGenerators: [...allGenerators] };
+            return { subgroupIndex: this.findSubgroupIndex(allGenerators), allGenerators: [...allGenerators] };
         });
         return newChoices;
     }
-    #findSubgroupIndex(elementArray) {
+    findSubgroupIndex(elementArray) {
         const elements = new BitSet(this.group.order, elementArray);
         for (const [index, subgroup] of this.group.subgroups.entries()) {
             if (BitSet.intersection(subgroup.members, elements).equals(elements)) {
@@ -190,13 +190,13 @@ class ViewModel {
         this.updateLayout();
     }
     updateStrategies(strategies) {
-        this.strategyParameters = this.#refineStrategies(strategies);
+        this.strategyParameters = this.refineStrategies(strategies);
         this.updateLayout();
     }
     updateGenerator(strategyIndex, generator) {
         const strategyParameters = this.strategyParameters;
         strategyParameters[strategyIndex].generator = generator;
-        this.strategyParameters = this.#refineStrategies(strategyParameters);
+        this.strategyParameters = this.refineStrategies(strategyParameters);
         // this.arrowGenerators with this.strategyParameters
         const arrowGenerators = new Set(this.arrowGenerators.map((arrowGenerator) => arrowGenerator.generator));
         const strategyGenerators = new Set(this.strategyParameters.map((strategyParameter) => strategyParameter.generator));
@@ -258,7 +258,7 @@ class ViewModel {
         this.updateLayout();
     }
     // Moved from Generator View class: validates and completes strategy params before feeding to generator
-    #refineStrategies(newStrategies) {
+    refineStrategies(newStrategies) {
         const generatorsUsed = new BitSet(this.group.order);
         const elementsGenerated = new BitSet(this.group.order, [0]);
         const strategies = [];
@@ -302,9 +302,6 @@ class View {
     }
     get group() {
         return this.viewModel.group;
-    }
-    update() {
-        // subclass responsibility
     }
 }
 /*
@@ -427,18 +424,18 @@ class Generator extends View {
             const strategyParameters = this.viewModel.strategyParameters;
             strategyParameters.forEach((strategyParameter, inx) => {
                 const tableRow = `<tr>
-                <td draggable="true">${inx + 1}</td>
-                <td data-action="this.showGeneratorMenu(event, ${inx})">
-                     ${this.viewModel.group.representation[strategyParameter.generator]}
-                     </td>
-                     <td data-action="this.showAxisMenu(event, ${inx})">
-                     <img src="./images/${AXIS_IMAGES[strategyParameter.layout][strategyParameter.direction]}">
-                     ${AXIS_LABELS[strategyParameter.layout][strategyParameter.direction]}
-                     </td>
-                     <td data-action="this.showOrderMenu(event, ${inx})">
-                     ${ORDER_LABELS[strategyParameters.length][strategyParameter.nestingLevel]}
-                     </td>
-                     </tr>`;
+                    <td draggable="true">${inx + 1}</td>
+                    <td data-action="this.showGeneratorMenu(event, ${inx})">
+                       ${this.viewModel.group.representation[strategyParameter.generator]}
+                    </td>
+                    <td data-action="this.showAxisMenu(event, ${inx})">
+                       <img src="./images/${AXIS_IMAGES[strategyParameter.layout][strategyParameter.direction]}">
+                          ${AXIS_LABELS[strategyParameter.layout][strategyParameter.direction]}
+                    </td>
+                    <td data-action="this.showOrderMenu(event, ${inx})">
+                       ${ORDER_LABELS[strategyParameters.length][strategyParameter.nestingLevel]}
+                    </td>
+                </tr>`;
                 this.generationTableElement.insertAdjacentHTML('beforeend', tableRow);
             });
         }

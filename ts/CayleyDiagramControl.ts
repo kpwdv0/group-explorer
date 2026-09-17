@@ -98,7 +98,7 @@ function clickHandler (event: MouseEvent) {
 }
 
 class ViewModel implements Serializable<CayleyDiagramControlJSON> {
-   #model
+   private _model
    rootElement: HTMLElement
    handlers: View[] = []
    diagramName: Maybe<string> = null                // null => generate diagram
@@ -108,7 +108,7 @@ class ViewModel implements Serializable<CayleyDiagramControlJSON> {
    chunkSubgroupIndex: Maybe<number> = null         // null => no chunking
 
    constructor (rootElement: HTMLElement, model: CayleyDiagramModel) {
-      this.#model = model
+      this._model = model
       this.rootElement = rootElement
 
       if (new URL(window.location.href).searchParams.get('SheetEditor') != null) {  // SheetEditor startup
@@ -127,7 +127,7 @@ class ViewModel implements Serializable<CayleyDiagramControlJSON> {
       this.handlers.push(handler)
    }
 
-   updateLayout () {
+   private updateLayout () {
       const {layout, arrowGenerators, strategyParameters} =
          layoutCayleyDiagram(
             this.group,
@@ -160,7 +160,7 @@ class ViewModel implements Serializable<CayleyDiagramControlJSON> {
            }
    }
 
-   setFromJSON (jsonObject: CayleyDiagramControlJSON) {
+   private setFromJSON (jsonObject: CayleyDiagramControlJSON) {
       this.diagramName = jsonObject?.diagram_name ?? null
       this.strategyParameters = jsonObject?.strategy_parameters ?? []
       this.arrowGenerators = jsonObject?.arrow_generators ?? null
@@ -176,11 +176,11 @@ class ViewModel implements Serializable<CayleyDiagramControlJSON> {
    }
 
    get group () {
-      return this.#model.group
+      return this._model.group
    }
 
    get model () {
-      return this.#model
+      return this._model
    }
 
    // State accessors for View
@@ -227,13 +227,13 @@ class ViewModel implements Serializable<CayleyDiagramControlJSON> {
       const allGenerators: groupElement[] = []
       const newChoices = choices.map((strategy) => {
          allGenerators.push(strategy.generator)
-         return {subgroupIndex: this.#findSubgroupIndex(allGenerators) as number, allGenerators: [...allGenerators]}
+         return {subgroupIndex: this.findSubgroupIndex(allGenerators) as number, allGenerators: [...allGenerators]}
       })
 
       return newChoices
    }
 
-   #findSubgroupIndex (elementArray: groupElement[]): Maybe<integer> {
+   private findSubgroupIndex (elementArray: groupElement[]): Maybe<integer> {
       const elements = new BitSet(this.group.order, elementArray)
       for (const [index, subgroup] of this.group.subgroups.entries()) {
          if (BitSet.intersection(subgroup.members, elements).equals(elements)) {
@@ -251,14 +251,14 @@ class ViewModel implements Serializable<CayleyDiagramControlJSON> {
    }
 
    updateStrategies (strategies: StrategyParameters[]) {
-      this.strategyParameters = this.#refineStrategies(strategies)
+      this.strategyParameters = this.refineStrategies(strategies)
       this.updateLayout()
    }
 
    updateGenerator (strategyIndex: number, generator: number) {
       const strategyParameters = this.strategyParameters
       strategyParameters[strategyIndex].generator = generator
-      this.strategyParameters = this.#refineStrategies(strategyParameters)
+      this.strategyParameters = this.refineStrategies(strategyParameters)
 
       // this.arrowGenerators with this.strategyParameters
       const arrowGenerators =
@@ -333,7 +333,7 @@ class ViewModel implements Serializable<CayleyDiagramControlJSON> {
    }
 
    // Moved from Generator View class: validates and completes strategy params before feeding to generator
-   #refineStrategies (newStrategies: StrategyParameters[]): StrategyParameters[] {
+   private refineStrategies (newStrategies: StrategyParameters[]): StrategyParameters[] {
       const generatorsUsed = new BitSet(this.group.order)
       const elementsGenerated = new BitSet(this.group.order, [0])
       const strategies: StrategyParameters[] = []
@@ -380,21 +380,19 @@ class ViewModel implements Serializable<CayleyDiagramControlJSON> {
    }
 }
 
-class View {
-   viewModel: ViewModel
+abstract class View {
+   protected viewModel: ViewModel
 
    constructor (viewModel: ViewModel) {
       this.viewModel = viewModel
       viewModel.registerForUpdates(this)
    }
 
-   get group () {
+   protected get group () {
       return this.viewModel.group
    }
 
-   update () {
-      // subclass responsibility
-   }
+   abstract update (): void  //  subclass responsibility
 }
 /*
 ```
@@ -538,18 +536,18 @@ class Generator extends View {
           strategyParameters.forEach((strategyParameter, inx) => {
              const tableRow =
                 `<tr>
-                <td draggable="true">${inx+1}</td>
-                <td data-action="this.showGeneratorMenu(event, ${inx})">
-                     ${this.viewModel.group.representation[strategyParameter.generator]}
-                     </td>
-                     <td data-action="this.showAxisMenu(event, ${inx})">
-                     <img src="./images/${AXIS_IMAGES[strategyParameter.layout][strategyParameter.direction]}">
-                     ${AXIS_LABELS[strategyParameter.layout][strategyParameter.direction]}
-                     </td>
-                     <td data-action="this.showOrderMenu(event, ${inx})">
-                     ${ORDER_LABELS[strategyParameters.length][strategyParameter.nestingLevel]}
-                     </td>
-                     </tr>`
+                    <td draggable="true">${inx+1}</td>
+                    <td data-action="this.showGeneratorMenu(event, ${inx})">
+                       ${this.viewModel.group.representation[strategyParameter.generator]}
+                    </td>
+                    <td data-action="this.showAxisMenu(event, ${inx})">
+                       <img src="./images/${AXIS_IMAGES[strategyParameter.layout][strategyParameter.direction]}">
+                          ${AXIS_LABELS[strategyParameter.layout][strategyParameter.direction]}
+                    </td>
+                    <td data-action="this.showOrderMenu(event, ${inx})">
+                       ${ORDER_LABELS[strategyParameters.length][strategyParameter.nestingLevel]}
+                    </td>
+                </tr>`
              this.generationTableElement.insertAdjacentHTML('beforeend', tableRow)
           })
        } else {

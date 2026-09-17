@@ -54,7 +54,7 @@ export function init(viewModel, displayElement) {
 class SheetEventUI {
     viewModel;
     rootElement;
-    #redrawTimer = null;
+    redrawTimer = null;
     constructor(viewModel, rootElement) {
         this.viewModel = viewModel;
         this.rootElement = rootElement;
@@ -236,16 +236,16 @@ class SheetEventUI {
     // For operations that may be performed repeatedly in rapid succession, like zoom and pan,
     // don't attempt to redraw the sheet on every event, but only periodically
     scheduleRedraw() {
-        if (this.#redrawTimer != null) {
-            window.clearTimeout(this.#redrawTimer);
+        if (this.redrawTimer != null) {
+            window.clearTimeout(this.redrawTimer);
         }
         const allVisualizerElements = Array
             .from(this.viewModel.modelElements.values())
             .filter((el) => 'isVisualizer' in el)
             .sort((a, b) => (a.group.URL == b.group.URL) ? 0 : (a.group.URL < b.group.URL) ? -1 : 1);
-        this.#redrawTimer = window.setTimeout((els) => {
+        this.redrawTimer = window.setTimeout((els) => {
             els.forEach((el) => el.viewElement?.redraw());
-            this.#redrawTimer = null;
+            this.redrawTimer = null;
         }, 250, allVisualizerElements);
     }
     getEditor(modelElement, event) {
@@ -263,7 +263,7 @@ class SheetEventUI {
         }
     }
     moveForward(modelElement) {
-        const above = this.#nodesSortedByZ().find((el) => el.z > modelElement.z);
+        const above = this.nodesSortedByZ().find((el) => el.z > modelElement.z);
         if (above != null) {
             ;
             [modelElement.z, above.z] = [above.z, modelElement.z];
@@ -272,7 +272,7 @@ class SheetEventUI {
         }
     }
     moveBackward(modelElement) {
-        const below = this.#nodesSortedByZ().reverse().find((el) => el.z < modelElement.z);
+        const below = this.nodesSortedByZ().reverse().find((el) => el.z < modelElement.z);
         if (below != null) {
             ;
             [modelElement.z, below.z] = [below.z, modelElement.z];
@@ -281,7 +281,7 @@ class SheetEventUI {
         }
     }
     moveToFront(modelElement) {
-        const nodes = this.#nodesSortedByZ();
+        const nodes = this.nodesSortedByZ();
         const maxZ = nodes[nodes.length - 1]?.z ?? modelElement.z;
         if (modelElement.z < maxZ) {
             modelElement.z = maxZ + 2;
@@ -289,14 +289,14 @@ class SheetEventUI {
         }
     }
     moveToBack(modelElement) {
-        const nodes = this.#nodesSortedByZ();
+        const nodes = this.nodesSortedByZ();
         const minZ = nodes[0]?.z ?? modelElement.z;
         if (modelElement.z > minZ) {
             modelElement.z = Math.max(2, minZ - 2);
             modelElement.viewElement?.updateZ();
         }
     }
-    #nodesSortedByZ() {
+    nodesSortedByZ() {
         return Array.from(this.viewModel.modelElements.values())
             .filter((el) => 'isNode' in el)
             .sort((a, b) => a.z - b.z);

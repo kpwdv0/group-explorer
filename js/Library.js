@@ -229,6 +229,53 @@ export async function loadFromPageURL() {
                     result = await downloadGroup(groupURL);
                 }
             }
+            /* FIXME: this code has been dead for a while, but we don't want to lose it
+             *   see https://github.com/nathancarter/gap-pkg-groupexplorer for its intended use
+            
+                  } else if (hrefURL.searchParams.get('waitForMessage') !== null) {
+                    return new Promise((resolve, reject) => {
+                      /*
+                       * When this page is loaded in an iframe, the parent window can
+                       * indicate which group to load by passing the full JSON
+                       * definition of the group in a postMessage() call to this
+                       * window, with the format { type: 'load group', group: G },
+                       * where G is the JSON data in question.
+                       * /
+                      window.addEventListener('message', function (event /*: MessageEvent * /) {
+                        const eventData = (event.data /*: any * /)
+                        if (typeof eventData === 'undefined') {
+                          Log.err('empty message received in Library.js:')
+                          Log.err(eventData)
+                          reject(new Error('empty message received in Library.js'))
+                        } else if (eventData.source === 'editor' ||
+                          eventData.source === 'external' ||
+                          eventData === LISTENER_READY_MESSAGE ||
+                          eventData === STATE_LOADED_MESSAGE
+                        ) {
+                          // Sheet editor messages -- ignore them, they belong to CayleyDiagram.js : receiveInitialSetup
+                        } else if (eventData.type === 'load group') {
+                          const loadGroupMessage /*: MSG_loadGroup * / = eventData
+                          try {
+                            if (typeof loadGroupMessage.group === 'object') {
+                              const group = dataToGroup(loadGroupMessage.group, 'json')
+                              if (group != null) {
+                                map[group.shortName] = group
+                                resolve(group)
+                              }
+                            }
+                            reject(new Error('unable to understand loadGroupMessage'))
+                          } catch (error) {
+                            reject(error)
+                          }
+                        } else {
+                          Log.err('unknown message received in Library.js:')
+                          Log.err(eventData)
+                          reject(new Error('unknown message received in Library.js'))
+                        }
+                      }, false)
+                    })
+                  }
+             */
         }
         else {
             throw new Error("error in URL: can't find groupURL query parameter");

@@ -64,8 +64,9 @@ export async function loadLibrary () {
 // when the DB connection isn't available for a normal loadLibrary() call)
 export function loadFromStoredGroups (storedGroups: unknown) {
    // FIXME: check for valid input -- it's coming from conversion
-   Object.entries(storedGroups as Record<string, GroupFileJSON>).forEach(([key, value]) => {
-      library[key] = Group.fromLocalCopyJSON(value)
+   (storedGroups as GroupFileJSON[]).forEach((json) => {
+      const group: Group = Group.fromLocalCopyJSON(json)
+      library[group.URL] = group
    })
 }
 
@@ -233,9 +234,12 @@ export function getGroupByURL (url: string): Maybe<Group> {
 
 // Read group library from local store
 async function getStoredGroups (): Promise<GroupRegistry.GroupRegistryType> {
-   const storedGroupsJSON = ((await StoredObjects.getGroupLibrary()) || {}) as Record<string, GroupFileJSON>
+   const storedGroupsJSON = ((await StoredObjects.getGroupLibrary()) || []) as GroupFileJSON[]
    const storedGroups = {} as GroupRegistry.GroupRegistryType
-   Object.entries(storedGroupsJSON).forEach(([key, value]) => storedGroups[key] = Group.fromLocalCopyJSON(value))
+   storedGroupsJSON.forEach((json) => {
+      const group: Group = Group.fromLocalCopyJSON(json)
+      storedGroups[group.URL] = group
+   })
 
    return storedGroups
 }
@@ -423,7 +427,7 @@ write). `updateGroups` finishes with it.
 ```javascript
  */
 export function saveLibrary (): Promise<unknown> {
-   return StoredObjects.saveGroupLibrary(library)
+   return StoredObjects.saveGroupLibrary(Object.values(library))
 }
 
 // Fetch/generate exactly the groups named in a manifest -- a mix of base-library `.group` URLs

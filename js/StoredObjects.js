@@ -267,7 +267,8 @@ async function migrateGroupsToV2(openRequest) {
     });
     // convert format to that used in IndexedDB
     await new Promise((resolve, reject) => {
-        const putRequest = objectStore.put(groups, GROUP_LIBRARY_KEY);
+        const newGroups = Array.from(Object.values(groups));
+        const putRequest = objectStore.put(newGroups, GROUP_LIBRARY_KEY);
         putRequest.onsuccess = (_ev) => resolve(openRequest.result);
         putRequest.onerror = (ev) => reject(ev);
     });

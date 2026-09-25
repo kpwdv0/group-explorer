@@ -54,8 +54,9 @@ export async function loadLibrary() {
 // when the DB connection isn't available for a normal loadLibrary() call)
 export function loadFromStoredGroups(storedGroups) {
     // FIXME: check for valid input -- it's coming from conversion
-    Object.entries(storedGroups).forEach(([key, value]) => {
-        library[key] = Group.fromLocalCopyJSON(value);
+    storedGroups.forEach((json) => {
+        const group = Group.fromLocalCopyJSON(json);
+        library[group.URL] = group;
     });
 }
 // get absolute URL from relative
@@ -208,9 +209,12 @@ export function getGroupByURL(url) {
 }
 // Read group library from local store
 async function getStoredGroups() {
-    const storedGroupsJSON = ((await StoredObjects.getGroupLibrary()) || {});
+    const storedGroupsJSON = ((await StoredObjects.getGroupLibrary()) || []);
     const storedGroups = {};
-    Object.entries(storedGroupsJSON).forEach(([key, value]) => storedGroups[key] = Group.fromLocalCopyJSON(value));
+    storedGroupsJSON.forEach((json) => {
+        const group = Group.fromLocalCopyJSON(json);
+        storedGroups[group.URL] = group;
+    });
     return storedGroups;
 }
 // get groupURL from page invocation and return promise for resolution from cache or download
@@ -387,7 +391,7 @@ write). `updateGroups` finishes with it.
 ```javascript
  */
 export function saveLibrary() {
-    return StoredObjects.saveGroupLibrary(library);
+    return StoredObjects.saveGroupLibrary(Object.values(library));
 }
 // Fetch/generate exactly the groups named in a manifest -- a mix of base-library `.group` URLs
 // (strings) and extended-library entries (ExtendedManifestEntry, generated from a presentation)

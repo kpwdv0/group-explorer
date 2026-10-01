@@ -495,7 +495,7 @@ class DisplayItemView {
          if (subgroup.isomorphicGroup == null) {
             subgroopInfo += `; it is not isomorphic any group in GE3`
          } else {
-            subgroopInfo += `, isomorphic to <a href="./GroupInfo.html?groupURL=${subgroup.isomorphicGroup.URL}" target="_blank">${subgroup.isomorphicGroup.name}</a>`
+            subgroopInfo += `, isomorphic to <a href="./GroupInfo.html?groupURL=${subgroup.isomorphicGroup.ref}" target="_blank">${subgroup.isomorphicGroup.name}</a>`
          }
          subgroopInfo += '</div>'
          if (subgroup.isNormal) {
@@ -503,7 +503,7 @@ class DisplayItemView {
             if (subgroup.isomorphicQuotientGroup == null) {
                subgroopInfo += ` not isomorphic to any group in GE3`
             } else {
-               subgroopInfo += ` isomorphic to <a href="./GroupInfo.html?groupURL=${subgroup.isomorphicQuotientGroup.URL}">${subgroup.isomorphicQuotientGroup.name}</a>`
+               subgroopInfo += ` isomorphic to <a href="./GroupInfo.html?groupURL=${subgroup.isomorphicQuotientGroup.ref}">${subgroup.isomorphicQuotientGroup.name}</a>`
             }
             subgroopInfo += '</div>'
          }

@@ -9,6 +9,7 @@ import { BitSet } from './BitSet.js';
 import * as DefiningRelations from './DefiningRelations.js';
 import * as GEUtils from './GEUtils.js';
 import * as Library from './Library.js';
+import * as Log from './Log.js';
 import * as MathUtils from './MathUtils.js';
 import * as ShowGAPCode from './ShowGAPCode.js';
 import { SubgroupLattice } from './SubgroupLattice.js';
@@ -40,7 +41,8 @@ export class Group {
     library;
     lastModifiedOnServer;
     thumbnails;
-    URL = '';
+    sourceURL;
+    ref = '';
     constructor(multtable) {
         this.multtable = multtable;
     }
@@ -75,18 +77,24 @@ export class Group {
         }
     }
     get gapid() {
+        // Should only be called on generated groups: others should have gapid/gapname set by Library.updateGroups()
+        if (this.library !== 'generated') {
+            const errorMessage = `Group.gapid getter called on curated group ${this.shortName}`;
+            Log.err(errorMessage);
+            throw new TypeError(errorMessage);
+        }
         if (!('_gapid_lock' in this)) {
-            const groupURL = this.URL;
             Object.defineProperty(this, '_gapid_lock', {
                 value: true,
                 enumerable: false,
                 configurable: true // so it can be removed later
             });
+            const ref = this.ref;
             window.setTimeout(async () => {
-                const presentation = new URL(groupURL).search.slice(1);
                 try {
+                    const presentation = new URL(ref).search.slice(1);
                     const { gapid, gapname } = await ShowGAPCode.resolveGAPInfo(presentation);
-                    const group = Library.getGroupByURL(groupURL); // make sure the group hasn't been deleted
+                    const group = Library.getGroupByRef(ref); // make sure the group hasn't been deleted
                     if (group != null && (group.gapid != gapid || group.gapname != gapname)) {
                         group.gapid = gapid;
                         group.gapname = gapname;

@@ -81,7 +81,7 @@ export interface VisualizerElementJSON extends NodeElementJSON {
    // model element contains visualizerJSON (possibly stale)
    // modelElement.viewElement holds the active visualizer object
    visualizerJSON: {
-      group_url: string,
+      group_ref: string,
       highlight_colors?: Maybe<color>[][]
    }
 }
@@ -387,15 +387,15 @@ export class TextElement extends NodeElement {
 export abstract class VisualizerElement extends NodeElement {
    group!: Group
    visualizerJSON!: {
-      group_url: string,
+      group_ref: string,
       highlight_colors?: Maybe<color>[][]
    }
    isVisualizer = true
 
    fromJSON (jsonObject: VisualizerElementJSON) {
-      this.group = Library.getGroupByURL(jsonObject.visualizerJSON.group_url) as Group
+      this.group = Library.getGroupByRef(jsonObject.visualizerJSON.group_ref) as Group
       if (this.group == null) {
-         const errorMessage = `unable to get group from ${jsonObject.visualizerJSON.group_url}`
+         const errorMessage = `unable to get group from ${jsonObject.visualizerJSON.group_ref}`
          Log.err(errorMessage)
          throw new TypeError(errorMessage)
       }
@@ -418,7 +418,7 @@ export class CDElement extends VisualizerElement {
    }
 
    // The one place a CDElement's visualizerJSON gets completed -- for both a freshly-added
-   // element (SheetControl.addElement gives it just {group_url}) and one loaded from a saved
+   // element (SheetControl.addElement gives it just {group_ref}) and one loaded from a saved
    // sheet -- so SheetView never has to tell the difference. See docs/README.md § The Sheet
    // system for why this belongs here and not in the View.
    fromJSON (jsonObject: CDElementJSON) {
@@ -601,8 +601,8 @@ export class MorphismElement extends LinkElement {
       this.useMulttableSourceTopRow = jsonObject.useMulttableSourceTopRow ?? false
       this.useMulttableDestinationTopRow = jsonObject.useMulttableDestinationTopRow ?? false
 
-      const sourceGroup = Library.getGroupByURL(this.source.visualizerJSON.group_url) as Group
-      const destinationGroup = Library.getGroupByURL(this.destination.visualizerJSON.group_url) as Group
+      const sourceGroup = Library.getGroupByRef(this.source.visualizerJSON.group_ref) as Group
+      const destinationGroup = Library.getGroupByRef(this.destination.visualizerJSON.group_ref) as Group
       this.mapping = new Mapping(sourceGroup, destinationGroup, jsonObject.definingPairs)
 
       return this
@@ -657,7 +657,7 @@ export interface SheetElementRequest {
    text?: string,
 
    // Visualizer
-   groupURL?: string,
+   group_ref?: string,
    highlight_colors?: Maybe<color>[][],
 
    // CDElement
@@ -715,7 +715,7 @@ export function translateRequest (requests: SheetElementRequest[]): SheetJSON[] 
       // create visualizer and move relevant values to visualizer
       if (isVisualizer(result)) {
          result.visualizerJSON = {
-            group_url: request.groupURL!,
+            group_ref: request.group_ref!,
             highlight_colors: request.highlight_colors ?? [[], [], []]
          }
 

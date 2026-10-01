@@ -15,8 +15,6 @@ In either case it leaves the group library loaded and ready for synchronous acce
 
 ```js
  */
-// Extended groups — generated from presentation, no .group files needed
-export const EXTENDED_GROUP_PREFIX = 'data:,//GE3/extended';
 export function isExtendedManifestEntry(arg) {
     return arg != null && typeof arg === 'object'
         && typeof arg.presentation === 'string'

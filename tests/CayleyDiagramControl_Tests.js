@@ -9,7 +9,7 @@ let S3
 before(async function () {
    this.timeout(5000)
    await Library.loadLibrary()
-   S3 = Library.getGroupByURL('../groups/S_3.group')
+   S3 = Library.getGroupByRef('../groups/S_3.group')
 })
 
 // ---- helpers ----------------------------------------------------------------

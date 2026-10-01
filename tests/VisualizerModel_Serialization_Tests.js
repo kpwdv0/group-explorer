@@ -10,8 +10,8 @@ let Z2, S3
 before(async function () {
    this.timeout(5000)
    await Library.loadLibrary()
-   Z2 = Library.getGroupByURL('../groups/Z_2.group')
-   S3 = Library.getGroupByURL('../groups/S_3.group')
+   Z2 = Library.getGroupByRef('../groups/Z_2.group')
+   S3 = Library.getGroupByRef('../groups/S_3.group')
 })
 
 // ---- helpers ----------------------------------------------------------------
@@ -33,14 +33,14 @@ describe('Visualizer model serialization', function () {
 
       it('toJSON has expected keys', function () {
          const model = new CycleGraphModel(S3)
-         expect(model.toJSON()).to.have.all.keys('group_url', 'highlight_colors', 'highlight_control')
+         expect(model.toJSON()).to.have.all.keys('group_ref', 'highlight_colors', 'highlight_control')
       })
 
-      it('round-trips group_url — group is restored when deserializing into different group', function () {
+      it('round-trips group_ref — group is restored when deserializing into different group', function () {
          const model = new CycleGraphModel(S3)
          const model2 = new CycleGraphModel(Z2)
          model2.fromJSON(model.toJSON())
-         expect(model2.group.URL).to.equal(S3.URL)
+         expect(model2.group.ref).to.equal(S3.ref)
       })
 
       it('round-trips highlight_colors', function () {
@@ -66,16 +66,16 @@ describe('Visualizer model serialization', function () {
       it('toJSON has expected keys', function () {
          const model = new MulttableModel(S3)
          expect(model.toJSON()).to.have.all.keys(
-            'group_url', 'organizing_subgroup', 'separation',
+            'group_ref', 'organizing_subgroup', 'separation',
             'coloration', 'color_reordering', 'elements', 'highlight_colors', 'highlight_control'
          )
       })
 
-      it('round-trips group_url — group is restored when deserializing into different group', function () {
+      it('round-trips group_ref — group is restored when deserializing into different group', function () {
          const model = new MulttableModel(S3)
          const model2 = new MulttableModel(Z2)
          model2.fromJSON(model.toJSON())
-         expect(model2.group.URL).to.equal(S3.URL)
+         expect(model2.group.ref).to.equal(S3.ref)
       })
 
       it('round-trips scalar fields', function () {
@@ -116,17 +116,17 @@ describe('Visualizer model serialization', function () {
       it('toJSON has expected keys', function () {
          const model = new CayleyDiagramModel(S3)
          expect(model.toJSON()).to.have.all.keys(
-            'group_url', 'background', 'fog_level', 'line_width', 'sphere_scale_factor',
+            'group_ref', 'background', 'fog_level', 'line_width', 'sphere_scale_factor',
             'zoom_level', 'arrowhead_placement', 'label_scale_factor', 'showing_axes',
             'highlight_colors', 'highlight_control', 'diagram_control', 'layout'
          )
       })
 
-      it('round-trips group_url — group is restored when deserializing into different group', function () {
+      it('round-trips group_ref — group is restored when deserializing into different group', function () {
          const model = new CayleyDiagramModel(S3)
          const model2 = new CayleyDiagramModel(Z2)
          model2.fromJSON(model.toJSON())
-         expect(model2.group.URL).to.equal(S3.URL)
+         expect(model2.group.ref).to.equal(S3.ref)
       })
 
       it('round-trips scalar view parameters', function () {

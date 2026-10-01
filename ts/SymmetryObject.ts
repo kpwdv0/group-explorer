@@ -33,7 +33,7 @@ export async function load () {
       document.getElementById('heading') as HTMLElement,
       `Object of Symmetry for ${group.name}`,
       () => [
-         {label: 'Group Info', action: () => window.open(`GroupInfo.html?groupURL=${group.URL}`)},
+         {label: 'Group Info', action: () => window.open(`GroupInfo.html?groupURL=${group.ref}`)},
          {label: 'Group Library', action: () => window.open('GroupExplorer.html')},
          {label: 'New Sheet', action: () => window.open('Sheet.html')},
          {label: '<hr>', action: () => {}},

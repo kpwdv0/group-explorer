@@ -15,19 +15,19 @@ Method overview:
 ```js
 */
 export { groups, getAllGroups, getGroupsByOrder, getVisibleGroups, };
-const groups = {};
+const groups = new Map();
 // return array of all groups in the registry
 function getAllGroups() {
-    return Object.values(groups);
+    return Array.from(groups.values());
 }
 // return array of groups in the registry of the given order
 function getGroupsByOrder(order) {
-    return Object.values(groups).filter((group) => group.order == order);
+    return getAllGroups().filter((group) => group.order == order);
 }
 function getVisibleGroups(filterConfig) {
     const groupVisibility = filterConfig.groupVisibility ?? {};
     return getAllGroups().filter((group) => {
-        const override = groupVisibility[group.URL];
+        const override = groupVisibility[group.ref];
         if (override != null)
             return override === 'shown';
         switch (group.library) {

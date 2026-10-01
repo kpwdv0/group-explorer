@@ -218,12 +218,12 @@ export function convertV1ToV2(v1Objects) {
                     break;
                 }
                 if (v1Visualizer.groupURL == null
-                    || Library.getGroupByURL(v1Visualizer.groupURL) == null
+                    || Library.getGroupByRef(v1Visualizer.groupURL) == null
                     || (v1Visualizer.diagram_name == null && v1Visualizer.strategy_parameters == null)) {
                     Log.err('unrecognizable v1 json in SheetSerialization.convertV1ToV2');
                     break;
                 }
-                const group = Library.getGroupByURL(v1Visualizer.groupURL);
+                const group = Library.getGroupByRef(v1Visualizer.groupURL);
                 const strategyParameters = v1Visualizer.strategy_parameters?.map((strategy_parameter) => {
                     return { ...strategy_parameter };
                 }) ?? [];
@@ -295,7 +295,7 @@ export function convertV1ToV2(v1Objects) {
                     [...(v1Visualizer?.square_highlights ?? [])],
                 ];
                 const v2Visualizer = {
-                    group_url: v1Visualizer.groupURL,
+                    group_ref: `${Library.GAPID_GROUP_PREFIX}?${group.gapid}`,
                     background: v1Visualizer.background,
                     fog_level: v1Visualizer.fog_level,
                     line_width: 4, // meaning has changed since v1, just using default
@@ -317,8 +317,9 @@ export function convertV1ToV2(v1Objects) {
                 if (v1Visualizer == null) {
                     break;
                 }
+                const group = Library.getGroupByRef(v1Visualizer.groupURL);
                 const v2Visualizer = {
-                    group_url: v1Visualizer.groupURL,
+                    group_ref: `${Library.GAPID_GROUP_PREFIX}?${group.gapid}`,
                     highlight_colors: formatHighlights([v1Visualizer?.highlights?.background, v1Visualizer?.highlights?.border, v1Visualizer?.highlights?.top], [null, null, null]),
                 };
                 v2Object.visualizerJSON = v2Visualizer;
@@ -329,8 +330,9 @@ export function convertV1ToV2(v1Objects) {
                 if (v1Visualizer == null) {
                     break;
                 }
+                const group = Library.getGroupByRef(v1Visualizer.groupURL);
                 const v2Visualizer = {
-                    group_url: v1Visualizer.groupURL,
+                    group_ref: `${Library.GAPID_GROUP_PREFIX}?${group.gapid}`,
                     highlight_colors: formatHighlights([v1Visualizer?.highlights?.background, v1Visualizer?.highlights?.border, v1Visualizer?.highlights?.corner], ['#E5E5E5', null, null]),
                     organizing_subgroup: v1Visualizer.organizingSubgroup,
                     separation: v1Visualizer.separation,
@@ -369,7 +371,9 @@ export function convertV1ToV2(v1Objects) {
             case 'CGElement':
             case 'MTElement': {
                 if (v1Object.groupURL != null) {
-                    v2Object.visualizerJSON.group_url = v1Object.groupURL;
+                    const group = Library.getGroupByRef(v1Object.groupURL);
+                    v2Object.visualizerJSON.group_ref =
+                        `${Library.GAPID_GROUP_PREFIX}?${group.gapid}`;
                 }
                 if ('visualizer' in v2Object && v2Object.visualizerJSON != null) {
                     const v2Visualizer = v2Object.visualizerJSON;

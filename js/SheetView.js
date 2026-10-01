@@ -438,7 +438,7 @@ export class CDView extends VisualizerView {
             'background', 'fog_level', 'line_width', 'sphere_scale_factor',
             'zoom_level', 'arrowhead_placement', 'label_scale_factor'
         ];
-        const canFastTrack = sharedModel?.group.URL == thisModel.group_url
+        const canFastTrack = sharedModel?.group.ref == thisModel.group_ref
             && JSON.stringify(layoutToJSON(sharedModel.layout)) == JSON.stringify(thisModel.layout)
             // The fast path only refreshes highlightColors -- it must never run while the shared
             // model holds a highlightControl thisModel doesn't already agree with (stale or live),

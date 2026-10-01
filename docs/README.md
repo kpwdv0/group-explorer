@@ -147,7 +147,9 @@ starting point, not a complete one, and add to it when another one surfaces.
 ### Storage
 
 Persistence uses IndexedDB via [StoredObjects](./StoredObjects.ts.md) (database `GE3`) to save
-the group library, user settings, table configuration, and saved sheets between sessions.
+the group library, user settings, table configuration, and saved sheets between sessions. The
+group library is stored as an array of self-describing group records, each carrying its own `ref`
+(see [Group identity](#group-identity-ref-and-sourceurl)).
 
 In addition to IndexedDB data, there is a single entry `GE-version` in localStorage used by
 [AutoUpgrade](./AutoUpgrade.ts.md) to determine whether to perform an upgrade.
@@ -228,7 +230,7 @@ replacement: control panel Import, IndexedDB Load, and the external generators t
 programmatically (SolvableInfo, GroupInfo, etc.).
 
 A freshly-created element's JSON starts out minimal — `SheetControl.addElement()` gives a new
-`CDElement` just `{group_url}` — and completing it is each element class's own job, in its
+`CDElement` just `{group_ref}` — and completing it is each element class's own job, in its
 `fromJSON()` here in [SheetModel](./SheetModel.ts.md), not SheetView's. `CDElement.fromJSON()` is
 the concrete case: when `visualizerJSON` has neither a `layout` nor a real `diagram_control`, it
 computes a default strategy (via [CayleyDiagramGenerator](./CayleyDiagramGenerator.ts.md)'s
@@ -293,17 +295,55 @@ collide. A `MorphismElement` with `showManyArrows` set is the one exception: its
 since a dense multi-arrow overlay needs to stay visible over the node artwork rather than hidden
 beneath it.
 
-### Generated groups
+### Group identity: `ref` and `sourceURL`
+
+A `Group` carries two strings that are easy to conflate but do different jobs:
+
+- **`ref`** is the group's identity. It keys the in-memory registry ([GroupRegistry](./GroupRegistry.ts.md),
+  a `Map`) and the persisted library, and it's what gets passed around wherever one place needs to
+  name a group to another: sheet JSON (`group_ref`), page links (`?groupURL=`), the library-change
+  broadcasts under [Inter-page communication](#inter-page-communication), and the per-group
+  visibility overrides in [Settings](./Settings.ts.md).
+- **`sourceURL`** is only *where a group's `.group` file was fetched from* — bookkeeping for
+  refetching on a version bump and for display on the Group Info page's File data panel. It is
+  never used as an identifier, and generated groups don't have one.
+
+A `ref` takes one of three forms:
+
+| Form | Used for | Example |
+|---|---|---|
+| `data:,//GE3/gapid?order,n` ([`GAPID_GROUP_PREFIX`](./Library.ts.md)) | curated groups: the base library (`groups/*.group`) and the extended library (`EXTENDED_MANIFEST` in [AutoUpgrade](./AutoUpgrade.ts.md)) | `data:,//GE3/gapid?8,2` |
+| `data:,//GE3/generated?presentation` ([`GENERATED_GROUP_PREFIX`](./Library.ts.md)) | groups generated from a presentation — see [Generated groups](#generated-groups) | `data:,//GE3/generated?a,b:a3,b2,abAB` |
+| the group's own `sourceURL` | a `.group` file loaded from outside the library (`?groupURL=` naming a file that isn't in it) | `https://example.edu/groups/MyGroup.group` |
+
+The split is about portability. Every copy of this build carries the same curated library, so a
+curated group's GAP id resolves to the same group on any host — a sheet or link built on one
+server works on another. A generated group's GAP id is resolved lazily from a live GAP server and
+names nothing a different host can rebuild, so generated groups keep their presentation as their
+`ref` even after the GAP id is known; the presentation can always be regenerated. An outside
+`.group` file keeps its URL as its identity, as all groups once did: that's host-specific, but
+honest, and giving it a gapid `ref` would let it silently replace the curated group with that id.
+
+[Library.getGroupByRef](./Library.ts.md) resolves a `ref`, and also accepts a plain file URL
+(relative or absolute), which it matches against `sourceURL`. The file-URL form isn't a
+transitional leftover: it's how the help pages and outside sites link to library groups
+(`GroupInfo.html?groupURL=groups/S_3.group`), so library `.group` file names are effectively part
+of the public interface even though they're no longer identities. The page parameter is still
+spelled `groupURL` for the same reason.
+
+Sheets store a visualizer's group as `group_ref` in format v2 ([SheetSerialization](./SheetSerialization.ts.md));
+v1 sheets, which named groups by file URL, are converted to gapid refs on read.
+
+#### Generated groups
 
 *Group Explorer* can create groups on the fly from a presentation (generators and relations)
-instead of loading them from a `.group` file. These are identified by a `data:` URI instead of a
-regular URL — `data:,//GE3/generated?presentation` — and are otherwise indistinguishable from
-built-in library groups once created. Extended-library groups (the optional non-Abelian groups of
-order 22–40) use the same mechanism under a second prefix,
-[`EXTENDED_GROUP_PREFIX`](./AutoUpgrade.ts.md) (`data:,//GE3/extended?...`). The user-facing side
-of this — the URI format, accepted presentation notations, and a walkthrough — is documented in
-the help system's [Group Explorer Terminology](../help-src/rf-geterms.md#generated-groups) page;
-this section covers the implementation.
+instead of loading them from a `.group` file. Once created they're otherwise indistinguishable
+from built-in library groups. The extended library (the optional non-Abelian groups of order
+22–40) is built by the same machinery from the presentations in `EXTENDED_MANIFEST`, but those
+groups are curated, so they get gapid refs. The user-facing side of this — the URI format,
+accepted presentation notations, and a walkthrough — is documented in the help system's
+[Group Explorer Terminology](../help-src/rf-geterms.md#generated-groups) page; this section covers
+the implementation.
 
 [DefiningRelations.generateGroupFromPresentation](./DefiningRelations.ts.md) parses the presentation
 and runs the Todd-Coxeter coset enumeration (Holt et. al., *Handbook of Computational Group Theory*,
@@ -313,14 +353,15 @@ an implicit size guard as well as a malformed-presentation guard, since filling 
 takes at least `|G|` iterations, so a group large enough to be a real problem tends to blow the cap
 before it's ever built.
 
-[Library.getGroupByURL](./Library.ts.md) drives the rest: it builds a `Group` from the multtable,
+[Library.getGroupByRef](./Library.ts.md) drives the rest: it builds a `Group` from the multtable,
 then checks [IsomorphicGroups.find](./IsomorphicGroups.ts.md) *before* doing anything else — if an
 isomorphic group already exists in the library, that's returned and nothing new is saved,
 preventing redundant duplicates. Only a genuinely new group gets decorated (name, presentation-
 matching element representations, declared generators — see `decorateGeneratedGroup` in
-[Library](./Library.ts.md)) and saved. Extended-library groups skip the isomorphism check — each
-is curated with its own metadata (GAP id, alternate names, external links) and is expected to
-exist independently even if isomorphic to something already in the library.
+[Library](./Library.ts.md)) and saved. Extended-library groups, built in `Library.updateGroups`
+instead, skip the isomorphism check — each is curated with its own metadata (GAP id, alternate
+names, external links) and is expected to exist independently even if isomorphic to something
+already in the library.
 
 ### External libraries
 

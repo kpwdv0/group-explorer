@@ -2,7 +2,7 @@ import { Serializable } from './GEUtils.js';
 import type { Group } from './Group.js';
 import type { HighlightControlModelInterface, HighlightControlJSON } from './HighlightControl.js';
 export type CycleGraphJSON = {
-    group_url: string;
+    group_ref: string;
     highlight_colors?: Maybe<color>[][];
     highlight_control?: HighlightControlJSON;
 };

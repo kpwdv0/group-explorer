@@ -29,7 +29,7 @@ export const COLUMNS = [
             return parseInt(v11) - parseInt(v21) || parseInt(v12) - parseInt(v22);
         },
         cellHTML: (group) => `<td class="no-diagram center" data-tooltip="Open Group Info page">
-             <a href="GroupInfo.html?groupURL=${group.URL}" target="_blank">
+             <a href="GroupInfo.html?groupURL=${group.ref}" target="_blank">
                 <div>${group.gapid}</div>
              </a>
           </td>`,
@@ -41,7 +41,7 @@ export const COLUMNS = [
         defaultVisible: true,
         sortComparator: (v1, v2) => v1.replace('(', '').localeCompare(v2.replace('(', '')),
         cellHTML: (group) => `<td class="no-diagram" data-tooltip="Open Group Info page">
-             <a href="GroupInfo.html?groupURL=${group.URL}" target="_blank">
+             <a href="GroupInfo.html?groupURL=${group.ref}" target="_blank">
                 <div>${group.name}</div>
              </a>
           </td>`,
@@ -60,7 +60,7 @@ export const COLUMNS = [
         headerHTML: '<a href="help/rf-groupterms/index.html#definition-of-a-group-via-generators-and-relations">Definition</a>',
         defaultVisible: true,
         cellHTML: (group) => `<td class="no-diagram" data-tooltip="Open Group Info page">
-             <a href="GroupInfo.html?groupURL=${group.URL}" target="_blank">
+             <a href="GroupInfo.html?groupURL=${group.ref}" target="_blank">
                 <div>${group.definition}</div>
              </a>
           </td>`,
@@ -114,7 +114,7 @@ export const COLUMNS = [
         cellHTML: (group, { cayleyTitle }) => {
             const selector = cayleyTitle != null ? `&diagram=${encodeURIComponent(cayleyTitle)}` : '';
             return `<td class="cayley-diagram center" data-tooltip="Open Cayley Diagram visualizer">
-             <a href="CayleyDiagram.html?groupURL=${group.URL}${selector}" target="_blank">
+             <a href="CayleyDiagram.html?groupURL=${group.ref}${selector}" target="_blank">
                 <img src="${group.thumbnails.cayleyDiagram}" width="100px" height="100px">
              </a>
           </td>`;
@@ -127,7 +127,7 @@ export const COLUMNS = [
         headerClass: 'diagram-header',
         defaultVisible: true,
         cellHTML: (group) => `<td class="multiplication-table center" data-tooltip="Open Multiplication Table visualizer">
-             <a href="Multtable.html?groupURL=${group.URL}" target="_blank">
+             <a href="Multtable.html?groupURL=${group.ref}" target="_blank">
                 <img src="${group.thumbnails.multtable}" width="100px" height="100px">
              </a>
           </td>`,
@@ -141,7 +141,7 @@ export const COLUMNS = [
         cellHTML: (group) => group.thumbnails.symmetryObject == null
             ? `<td class="no-diagram center"><div>none</div></td>`
             : `<td class="symmetry-object center" data-tooltip="Open Symmetry Object visualizer">
-                  <a href="SymmetryObject.html?groupURL=${group.URL}" target="_blank">
+                  <a href="SymmetryObject.html?groupURL=${group.ref}" target="_blank">
                      <img src="${group.thumbnails.symmetryObject}" width="100px" height="100px">
                   </a>
                </td>`,
@@ -153,7 +153,7 @@ export const COLUMNS = [
         headerClass: 'diagram-header',
         defaultVisible: true,
         cellHTML: (group) => `<td class="cycle-graph center" data-tooltip="Open Cycle Graph visualizer">
-             <a href="CycleGraph.html?groupURL=${group.URL}" target="_blank">
+             <a href="CycleGraph.html?groupURL=${group.ref}" target="_blank">
                 <img src="${group.thumbnails.cycleGraph}" width="100px" height="100px">
              </a>
           </td>`,
@@ -335,7 +335,7 @@ function addToTable(tableElement, group, cayleyTitle) {
     const aux = { cayleyTitle };
     const groupLibrary = group.library || 'default';
     const cells = COLUMNS.map((col) => col.cellHTML(group, aux).replace('<td', `<td data-col-id="${col.id}"`)).join('\n          ');
-    tableElement.querySelector('tbody').insertAdjacentHTML('beforeend', `<tr data-group="${group.URL}" data-library="${groupLibrary}">
+    tableElement.querySelector('tbody').insertAdjacentHTML('beforeend', `<tr data-group="${group.ref}" data-library="${groupLibrary}">
           ${cells}
        </tr>`);
 }

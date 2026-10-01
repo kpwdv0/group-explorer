@@ -25,18 +25,18 @@ export {
    getVisibleGroups,
 }
 
-export type GroupRegistryType = {[key: string]: Group}
+export type GroupRegistryType = Map<string, Group>
 
-const groups: GroupRegistryType = {}
+const groups: GroupRegistryType = new Map<string, Group>()
 
 // return array of all groups in the registry
 function getAllGroups (): Group[] {
-   return Object.values(groups)
+   return Array.from(groups.values())
 }
 
 // return array of groups in the registry of the given order
 function getGroupsByOrder (order: integer): Group[] {
-   return Object.values(groups).filter((group) => group.order == order)
+   return getAllGroups().filter((group) => group.order == order)
 }
 
 // return groups visible under the given filter config (from Settings.getFilterConfig())
@@ -44,7 +44,7 @@ type filterType = { groupVisibility?: { [key: html]: 'shown' | 'hidden' } } & Se
 function getVisibleGroups (filterConfig: filterType): Group[] {
    const groupVisibility = filterConfig.groupVisibility ?? {}
    return getAllGroups().filter((group) => {
-      const override = groupVisibility[group.URL]
+      const override = groupVisibility[group.ref]
       if (override != null) return override === 'shown'
       switch (group.library) {
          case 'extended':   return group.order < 32 ? filterConfig.showExtendedLt32 : filterConfig.showExtendedGe32

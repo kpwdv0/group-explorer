@@ -23,7 +23,7 @@ export function display (basicFactsElementId: string, group: Group) {
    channel.addEventListener('message', async (messageEvent: MessageEvent<unknown>) => {
       if ((messageEvent.data as { source: string })?.source !== 'library') return
       await Library.loadLibrary()
-      const newGroup = Library.getAllGroups().find((G) => G.URL === group.URL)
+      const newGroup = Library.getAllGroups().find((G) => G.ref === group.ref)
       if (newGroup != null && newGroup.gapid != null && newGroup.gapid != '' && newGroup.gapid != group.gapid) {
          basicFactsElement.querySelectorAll('tr > td:first-child').forEach((el) => {
             if (el.textContent === 'GAP ID') {

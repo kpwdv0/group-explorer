@@ -6,7 +6,7 @@ import type { HighlightControlModelInterface, HighlightControlJSON } from './Hig
 export { DEFAULT_NODE_COLOR } from './CayleyDiagramView.js';
 export type { POV, NodeType, ArrowType, ChunkType, LayoutType } from './CayleyDiagramView.ts';
 export type CayleyDiagramModelJSON = {
-    group_url: string;
+    group_ref: string;
     layout: Maybe<LayoutJSON>;
     background: CayleyDiagramModel['background'];
     fog_level: CayleyDiagramModel['fog_level'];

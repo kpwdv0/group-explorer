@@ -95,32 +95,6 @@ export type LayoutJSON = {
     arrows: ArrowJSON[];
     chunks: ChunkJSON[];
 };
-export type CayleyDiagramJSON = {
-    background: color;
-    cameraJSON: Object;
-    cameraUp: {
-        x: float;
-        y: float;
-        z: float;
-    };
-    fog_level: float;
-    line_width: number;
-    sphere_base_radius: float;
-    sphere_scale_factor: float;
-    zoom_level: number;
-    arrowhead_placement: float;
-    label_scale_factor: float;
-    groupURL: string;
-    right_multiply: boolean;
-    arrows: ArrowJSON[];
-    nodes: NodeJSON[];
-    chunk?: integer;
-    diagram_name?: string;
-    strategy_parameters?: StrategyParameters[];
-    color_highlights?: color[];
-    ring_highlights?: Maybe<color>[];
-    square_highlights?: Maybe<color>[];
-};
 export type CayleyDiagramViewOptions = {
     group?: Group;
     diagramName?: string;

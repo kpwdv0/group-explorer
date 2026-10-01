@@ -35,13 +35,6 @@ import * as SheetView from './SheetView.js';
 import { TextEditor, ConnectionEditor, MorphismEditor, RemoteEditor } from './SheetModelEditors.js';
 import { makeDetachedMenu, makeDialog } from './UIComponents.js';
 import { recognizeSelect, recognizeContextMenu, recognizeDragAndDrop, recognizeZoom, recognizeMoveResize } from './Gestures.js';
-/*::
-import type {CayleyDiagramJSON} from './CayleyDiagramView.js'
-import type {CycleGraphJSON} from './CycleGraphView.js'
-import type {MulttableJSON} from './MulttableView.js'
-
-type VizDispJSON = CayleyDiagramJSON | CycleGraphJSON | MulttableJSON
- */
 /*
 ## init
 
@@ -197,7 +190,7 @@ class SheetEventUI {
          <li data-action="this.viewModel.removeElement(modelElement)">Delete</li>
          </ul>`
         ].join('');
-        const openInfo = () => window.open('./GroupInfo.html?groupURL=' + modelElement.group.URL);
+        const openInfo = () => window.open('./GroupInfo.html?groupURL=' + modelElement.group.ref);
         makeDetachedMenu(contextMenuHTML, event)
             .then((action) => (action != null) && eval(action));
     }
@@ -242,7 +235,7 @@ class SheetEventUI {
         const allVisualizerElements = Array
             .from(this.viewModel.modelElements.values())
             .filter((el) => 'isVisualizer' in el)
-            .sort((a, b) => (a.group.URL == b.group.URL) ? 0 : (a.group.URL < b.group.URL) ? -1 : 1);
+            .sort((a, b) => (a.group.ref == b.group.ref) ? 0 : (a.group.ref < b.group.ref) ? -1 : 1);
         this.redrawTimer = window.setTimeout((els) => {
             els.forEach((el) => el.viewElement?.redraw());
             this.redrawTimer = null;

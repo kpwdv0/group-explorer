@@ -58,21 +58,21 @@ export async function load () {
       const message: unknown = messageEvent.data
       if (Library.isLibraryUpdate(message)) {
          await Library.loadLibrary()
-         const visibleGroups = GroupRegistry.getVisibleGroups(Settings.getFilterConfig()).map((G) => G.URL)
-         if (message.created.some((groupURL: string) => visibleGroups.includes(groupURL))
+         const visibleGroups = GroupRegistry.getVisibleGroups(Settings.getFilterConfig()).map((G) => G.ref)
+         if (message.created.some((groupRef: string) => visibleGroups.includes(groupRef))
             || (message.created.length == 0 && message.updated.length == 0 && message.deleted.length == 0)
          ) {
             displayGroups()
          } else {
-            message.deleted.forEach((groupURL: string) => {
-               const groupRow = document.querySelector(`tr[data-group="${groupURL}"]`)
+            message.deleted.forEach((groupRef: string) => {
+               const groupRow = document.querySelector(`tr[data-group="${groupRef}"]`)
                if (groupRow != null) {
                   groupRow.remove()
                }
             })
-            message.updated.forEach((groupURL: string) => {
-               const group = Library.getGroupByURL(groupURL)
-               const gapidCell = document.querySelector(`tr[data-group="${groupURL}"] > td:first-child`)
+            message.updated.forEach((groupRef: string) => {
+               const group = Library.getGroupByRef(groupRef)
+               const gapidCell = document.querySelector(`tr[data-group="${groupRef}"] > td:first-child`)
                if (gapidCell != null && group != null) {
                   gapidCell.children[0].textContent = group.gapid
                }

@@ -9,7 +9,6 @@ graph, on a [Sheet](./Sheet.html.md).
 ```javascript
  */
 import * as GEUtils from './GEUtils.js'
-import * as Library from './Library.js'
 import * as SheetModel from './SheetModel.js'
 
 import type { Group } from './Group.ts'
@@ -91,7 +90,7 @@ function makeSolvableGroupContent (group: Group) {
 }
 
 function makeGroupRef (group: Group): string {
-   return `<a href="./GroupInfo.html?groupURL=${group.URL}" target="_blank">${group.name}</a>`
+   return `<a href="./GroupInfo.html?groupURL=${group.ref}" target="_blank">${group.name}</a>`
 }
 
 function findSolvableDecomposition (subgroup: Subgroup): Subgroup[] {
@@ -150,7 +149,7 @@ function showSolvableDecompositionSheet (group: Group, type: SheetModel.Visualiz
           // trivial group: shrink to W/3 and center in column
           sheetElementsAsJSON.push( {
              className : type, id : vizName,
-             groupURL : entry.isomorphicGroup.URL,
+             group_ref : entry.isomorphicGroup.ref,
              x : L + W/4, y : vizY + H/4, w : W/2, h : H/2,
              highlight_colors : [[GEUtils.fromRainbow(0, s, l)], [], []],
           } )
@@ -165,7 +164,7 @@ function showSolvableDecompositionSheet (group: Group, type: SheetModel.Visualiz
           })
           sheetElementsAsJSON.push( {
              className : type, id : vizName,
-             groupURL : entry.isomorphicGroup.URL,
+             group_ref : entry.isomorphicGroup.ref,
              x : L+index*W+index*hgap, y : vizY, w : W, h : H,
              highlight_colors : [highlights, [], []], organizing_subgroup: previous.subgroupIndex
           } )
@@ -189,7 +188,7 @@ function showSolvableDecompositionSheet (group: Group, type: SheetModel.Visualiz
           })
           sheetElementsAsJSON.push( {
              className : type, id : qVizName,
-             groupURL : (previous.isomorphicQuotientGroup as Group).URL,
+             group_ref : (previous.isomorphicQuotientGroup as Group).ref,
              x : L+index*W+index*hgap+bottomShift, y : vizY+H+vgap,
              w : W, h : H,
              highlight_colors : [quotientGroupHighlights, [], []]

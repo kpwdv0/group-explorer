@@ -106,7 +106,7 @@ function getImages(group) {
         cayleyDiagramThumbnailView.draw(group, diagramName);
         images[inx][0] = {
             name: diagramName,
-            link: `CayleyDiagram.html?groupURL=${group.URL}` + ((diagramName == null) ? '' : `&diagram=${diagramName}`),
+            link: `CayleyDiagram.html?groupURL=${group.ref}` + ((diagramName == null) ? '' : `&diagram=${diagramName}`),
             src: cayleyDiagramThumbnailView.getImage().src,
         };
     }
@@ -122,7 +122,7 @@ function getImages(group) {
             imageSource = cycleGraphView.getImage().src;
         }
         images[0][1] = {
-            link: `CycleGraph.html?groupURL=${group.URL}`,
+            link: `CycleGraph.html?groupURL=${group.ref}`,
             src: imageSource
         };
     }
@@ -138,7 +138,7 @@ function getImages(group) {
             imageSource = multtableView.getImage().src;
         }
         images[0][2] = {
-            link: `Multtable.html?groupURL=${group.URL}`,
+            link: `Multtable.html?groupURL=${group.ref}`,
             src: imageSource
         };
     }
@@ -158,7 +158,7 @@ function getImages(group) {
         }
         images[inx][3] = {
             name: symmetryObjectName,
-            link: `SymmetryObject.html?groupURL=${group.URL}&diagram=${symmetryObjectName}`,
+            link: `SymmetryObject.html?groupURL=${group.ref}&diagram=${symmetryObjectName}`,
             src: imageSource
         };
     }
@@ -179,17 +179,17 @@ function showAllVisualizersSheet(group) {
     const allVisualizersSheet = [
         {
             className: 'CDElement', id: 'cd',
-            groupURL: group.URL, diagram_name: group.cayleyDiagrams[0]?.name,
+            group_ref: group.ref, diagram_name: group.cayleyDiagrams[0]?.name,
             x: L, y: vizY, w: W, h: H
         },
         {
             className: 'MTElement', id: 'mt',
-            groupURL: group.URL,
+            group_ref: group.ref,
             x: L + W + gap, y: vizY, w: W, h: H
         },
         {
             className: 'CGElement', id: 'cg',
-            groupURL: group.URL,
+            group_ref: group.ref,
             x: L + 2 * (W + gap), y: vizY, w: W, h: H
         },
         {

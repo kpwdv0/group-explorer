@@ -62,7 +62,7 @@ export interface TextElementJSON extends NodeElementJSON {
 }
 export interface VisualizerElementJSON extends NodeElementJSON {
     visualizerJSON: {
-        group_url: string;
+        group_ref: string;
         highlight_colors?: Maybe<color>[][];
     };
 }
@@ -152,7 +152,7 @@ export declare class TextElement extends NodeElement {
 export declare abstract class VisualizerElement extends NodeElement {
     group: Group;
     visualizerJSON: {
-        group_url: string;
+        group_ref: string;
         highlight_colors?: Maybe<color>[][];
     };
     isVisualizer: boolean;
@@ -228,7 +228,7 @@ export interface SheetElementRequest {
     fontColor?: string;
     opacity?: float;
     text?: string;
-    groupURL?: string;
+    group_ref?: string;
     highlight_colors?: Maybe<color>[][];
     arrow_generators?: ArrowGenerator[];
     diagram_name?: string;

@@ -33,12 +33,12 @@ export async function load() {
         ? SheetEditor.getInitialData()
         : { elementId: null, json: null }));
     // Get group, either from page URL or data from Sheet
-    const group = await ((initialJSON?.group_url == null)
+    const group = await ((initialJSON?.group_ref == null)
         ? Library.loadFromPageURL()
-        : Library.getGroupByURL(initialJSON.group_url));
+        : Library.getGroupByRef(initialJSON.group_ref));
     // Create Header
     Heading.display(document.getElementById('heading'), `Multiplication Table for ${group.name}`, () => [
-        { label: 'Group Info', action: () => window.open(`GroupInfo.html?groupURL=${group.URL}`) },
+        { label: 'Group Info', action: () => window.open(`GroupInfo.html?groupURL=${group.ref}`) },
         { label: 'Group Library', action: () => window.open('GroupExplorer.html') },
         { label: 'New Sheet', action: () => window.open('Sheet.html') },
         { label: '<hr>', action: () => { } },

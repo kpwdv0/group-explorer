@@ -4,7 +4,7 @@ import { HighlightControlJSON } from './HighlightControl.js';
 export type MulttableColoration = 'rainbow' | 'grayscale' | 'none';
 export type MulttableColorReordering = 'topRowFixed' | 'elementColorsFixed';
 export type MulttableJSON = {
-    group_url: string;
+    group_ref: string;
     highlight_colors?: Maybe<color>[][];
     highlight_control?: HighlightControlJSON;
     organizing_subgroup?: number;

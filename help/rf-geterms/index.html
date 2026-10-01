@@ -73,6 +73,9 @@ img { border: 1px solid black; }
                           href="#url-of-a-group">URL of a group</a></li>
                 
                     <li><a style="text-decoration: none;"
+                          href="#reference-to-a-group">Reference to a group</a></li>
+                
+                    <li><a style="text-decoration: none;"
                           href="#naming-scheme-for-group-elements">Naming scheme (for group elements)</a></li>
                 
                     <li><a style="text-decoration: none;"
@@ -193,12 +196,42 @@ group. See also <a href="#url-of-a-group">URL of a group</a>.</p>
 which the file from which the group was loaded was last modified. See also
 <a href="#url-of-a-group">URL of a group</a>.</p>
 <h3 id="url-of-a-group">URL of a group</h3>
-<p>Groups are stored on the <em>Group Explorer</em> website in files that end in the
-extension <code>.group</code>, and then copied to the browser&rsquo;s local storage for faster
-subsequent access. The group&rsquo;s URL is the web address (generally beginning with
-<code>http://</code> or <code>https://</code>) of the <code>.group</code> file from which the group was loaded on
-<em>Group Explorer&rsquo;s</em> website. Example:</p>
-<p><code>https://nathancarter.github.io/group-explorer/GroupInfo.html?groupURL=https://nathancarter.github.io/group-explorer/groups/Z_2%20x%20Z_4.group</code></p>
+<p>Most groups in <em>Group Explorer&rsquo;s</em> built-in library are stored on its website in
+files that end in the extension <code>.group</code>, and then copied to the browser&rsquo;s
+local storage for faster subsequent access. The group&rsquo;s URL is the web address
+(generally beginning with <code>http://</code> or <code>https://</code>) of the <code>.group</code> file from
+which the group was loaded. <a href="#generated-groups">Generated groups</a> and
+<a href="#extended-library-groups">extended library groups</a> aren&rsquo;t loaded from a file,
+so they have no URL.</p>
+<h3 id="reference-to-a-group">Reference to a group</h3>
+<p>Each <em>Group Explorer</em> page that displays a group is told which group to show by
+the <code>groupURL</code> parameter in the page&rsquo;s web address. A group can be named there
+in any of three ways:</p>
+<ul>
+<li>
+<p><strong>By its GAP id</strong>, for any group in the built-in library (including the
+  <a href="#extended-library-groups">extended library</a>): <code>data:,//GE3/gapid?</code> followed by
+  the group&rsquo;s GAP id, shown on its Group Info page. For example, this link shows
+  <script type="math/tex">\mathbb{Z}_2\times\mathbb{Z}_4</script>, whose GAP id is <code>8,2</code>:</p>
+<p><code>https://nathancarter.github.io/group-explorer/GroupInfo.html?groupURL=data:,//GE3/gapid?8,2</code></p>
+<p>This is the form <em>Group Explorer</em> uses itself, in the links between its
+pages and in <a href="../rf-um-sheetwindow/">sheets</a>. It doesn&rsquo;t depend on where
+<em>Group Explorer</em> is installed, so it&rsquo;s the best choice for a link you want
+to share: the same <code>groupURL</code> works with any copy of <em>Group Explorer</em>.</p>
+</li>
+<li>
+<p><strong>By its definition</strong>, for a <a href="#generated-groups">generated group</a>:
+  <code>data:,//GE3/generated?</code> followed by a presentation of the group, as
+  described below.</p>
+</li>
+<li>
+<p><strong>By the <a href="#url-of-a-group">URL</a> of its <code>.group</code> file</strong>, either complete or
+  relative to the <em>Group Explorer</em> page, as in
+  <code>GroupInfo.html?groupURL=groups/Z_2%20x%20Z_4.group</code>. Links written this way
+  keep working, but they depend on the file&rsquo;s location, so a link containing a
+  complete URL only works with the copy of <em>Group Explorer</em> at that address.</p>
+</li>
+</ul>
 <h3 id="naming-scheme-for-group-elements">Naming scheme (for group elements)</h3>
 <p>See <a href="#representation-of-a-group">representation of a group</a>.</p>
 <h3 id="representation-of-a-group">Representation of a group</h3>
@@ -255,9 +288,9 @@ produced when needed, as in these circumstances:</p>
 <li>can be <a href="../rf-um-sheetwindow/#export-import-backup-and-restore">exported</a> to other
   browsers</li>
 </ul>
-<p>Generated groups are distinguished by their URL format, which uses a <a href="https://en.wikipedia.org/wiki/Data_URI_scheme">data URI
-scheme</a> instead of a traditional
-web address. For example, the group defined by the presentation
+<p>A generated group is <a href="#reference-to-a-group">referred to</a> by its definition,
+written in a <a href="https://en.wikipedia.org/wiki/Data_URI_scheme">data URI scheme</a>
+instead of a traditional web address. For example, the group defined by the presentation
 ⟨<i>a</i>, <i>b</i> : <i>a</i><sup>3</sup>&nbsp;=&nbsp;<i>b</i><sup>12</sup>
 &nbsp;=&nbsp;1,&nbsp;<i>a</i><i>b</i>&nbsp;=&nbsp;<i>b</i><i>a</i>⟩
 can be specified by the URI &lsquo;data:,//GE3/generated?a,b:aba-1b-1,a-6,a3ba-3b-1,b5a3b,b2a2ba-2b-3&rsquo;
@@ -327,20 +360,18 @@ or &lsquo;data:,//GE3/generated?a,b:abAB,aaaaaa,aaabAAAB,bbbbbaaab,bbaabAABBB&rs
 </li>
 </ol>
 <h3 id="extended-library-groups">Extended Library Groups</h3>
-<p><em>Group Explorer&rsquo;s</em> optional non-abelian groups of orders 22–40 are stored using
-the same <a href="https://en.wikipedia.org/wiki/Data_URI_scheme">data URI scheme</a> as
-<a href="#generated-groups">generated groups</a>, but with a different prefix:</p>
-<p><code>data:,//GE3/extended?presentation</code></p>
-<p>Unlike generated groups, extended library groups are built into <em>Group Explorer</em>
-and come with full metadata: GAP names and IDs, alternate names, links to
-external references, and descriptive phrases. They behave identically to the
-default built-in groups (<code>.group</code> files) but require no separate files — they
-are generated on the fly from their presentations whenever they are first needed.</p>
+<p><em>Group Explorer&rsquo;s</em> optional non-abelian groups of orders 22–40 are built the
+same way as <a href="#generated-groups">generated groups</a>, from presentations, but
+unlike generated groups they&rsquo;re part of <em>Group Explorer&rsquo;s</em> library and come with
+full metadata: GAP names and IDs, alternate names, links to external
+references, and descriptive phrases. They behave identically to the default
+built-in groups (<code>.group</code> files) but require no separate files, and like them
+are <a href="#reference-to-a-group">referred to</a> by GAP id, as in
+<code>data:,//GE3/gapid?24,3</code>.</p>
 <p>The notable large groups, by contrast, use traditional URLs and are downloaded
 as <code>.group</code> files just like the default library.</p>
 <p>Extended library groups are enabled or disabled in the
-<a href="../rf-um-mainwindow/#settings">Settings dialog</a>. You will not normally need to
-construct or type a <code>data:,//GE3/extended</code> URL yourself.</p>
+<a href="../rf-um-mainwindow/#settings">Settings dialog</a>.</p>
 <h3 id="page-menu">Page Menu</h3>
 <p>All pages have a menu icon in the upper right-hand corner, indicated by a
 so-called &ldquo;hamburger&rdquo; icon, <script type="math/tex">\equiv</script>. In addition to page-specific options,

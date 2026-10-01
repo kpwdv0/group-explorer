@@ -116,7 +116,7 @@ function showZmnIsomorphismSheet (group: Group, m: groupElement, n: groupElement
     const sheetElementsAsJSON: SheetModel.SheetElementRequest[] = [
         {
             // rectangular CD of Z_m x Z_n with arrows for a,b shown
-            className : 'CDElement', id : 'left', groupURL : group.URL,
+            className : 'CDElement', id : 'left', group_ref : group.ref,
             x : L, y : vizY, w : W, h : H,
             arrow_generators : [ {generator: a, color: '#660000'},
                                  {generator: b, color: '#006600'} ],
@@ -125,7 +125,7 @@ function showZmnIsomorphismSheet (group: Group, m: groupElement, n: groupElement
         },
         {
             // same as previous, plus arrow for ab
-            className : 'CDElement', id : 'middle', groupURL : group.URL,
+            className : 'CDElement', id : 'middle', group_ref : group.ref,
             x : L + W + gap, y : vizY, w : W, h : H,
             arrow_generators : [ {generator: a, color: '#660000'},
                                  {generator: b, color: '#006600'},
@@ -135,7 +135,7 @@ function showZmnIsomorphismSheet (group: Group, m: groupElement, n: groupElement
         },
         {
             // circular CD of Z_mn with arrow for ab shown only
-            className : 'CDElement', id : 'right', groupURL : group.URL,
+            className : 'CDElement', id : 'right', group_ref : group.ref,
             x : L + 2 * (W + gap), y : vizY, w : W, h : H,
             arrow_generators : [ {generator: ab, color: '#000066'} ],
             strategy_parameters : [ {generator: ab, layout: 'circular', direction: 'XY', nestingLevel: 0} ]
@@ -205,7 +205,7 @@ function showNoZmnIsomorphismSheet (group: Group, m: groupElement, n: groupEleme
     const sheetElementsAsJSON: SheetModel.SheetElementRequest[] = [
         {
             // rectangular CD of Z_m x Z_n with arrows for a,b shown
-            className : 'CDElement', id : 'left', groupURL : ZmxZn.URL,
+            className : 'CDElement', id : 'left', group_ref : ZmxZn.ref,
             x : L, y : vizY, w : W, h : H,
             arrow_generators : [ {generator: a, color: '#660000'},
                                  {generator: b, color: '#006600'} ],
@@ -214,7 +214,7 @@ function showNoZmnIsomorphismSheet (group: Group, m: groupElement, n: groupEleme
         },
         {
             // same as previous, plus arrow for maxOrdElt
-            className : 'CDElement', id : 'middle', groupURL : ZmxZn.URL,
+            className : 'CDElement', id : 'middle', group_ref : ZmxZn.ref,
             x : L + W + gap, y : vizY, w : W, h : H,
             arrow_generators : [ {generator: a, color: '#660000'},
                                  {generator: b, color: '#006600'},
@@ -224,7 +224,7 @@ function showNoZmnIsomorphismSheet (group: Group, m: groupElement, n: groupEleme
         },
         {
             // circular CD of Z_mn with arrow for maxOrdElt shown only
-            className : 'CDElement', id : 'right', groupURL : ZmxZn.URL,
+            className : 'CDElement', id : 'right', group_ref : ZmxZn.ref,
             x : L + 2 * (W + gap), y : vizY, w : W, h : H,
             arrow_generators : [ {generator: maxOrdElt, color: '#000066'} ],
             strategy_parameters : [ {generator: maxOrdElt, layout: 'rotated', direction: 'XY', nestingLevel: 0 },

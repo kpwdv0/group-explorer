@@ -48,7 +48,7 @@ export const COLUMNS: ColumnDef[] = [
       },
       cellHTML: (group: Group) =>
          `<td class="no-diagram center" data-tooltip="Open Group Info page">
-             <a href="GroupInfo.html?groupURL=${group.URL}" target="_blank">
+             <a href="GroupInfo.html?groupURL=${group.ref}" target="_blank">
                 <div>${group.gapid}</div>
              </a>
           </td>`,
@@ -61,7 +61,7 @@ export const COLUMNS: ColumnDef[] = [
       sortComparator: (v1, v2) => v1.replace('(', '').localeCompare(v2.replace('(', '')),
       cellHTML: (group: Group) =>
          `<td class="no-diagram" data-tooltip="Open Group Info page">
-             <a href="GroupInfo.html?groupURL=${group.URL}" target="_blank">
+             <a href="GroupInfo.html?groupURL=${group.ref}" target="_blank">
                 <div>${group.name}</div>
              </a>
           </td>`,
@@ -81,7 +81,7 @@ export const COLUMNS: ColumnDef[] = [
       defaultVisible: true,
       cellHTML: (group: Group) =>
          `<td class="no-diagram" data-tooltip="Open Group Info page">
-             <a href="GroupInfo.html?groupURL=${group.URL}" target="_blank">
+             <a href="GroupInfo.html?groupURL=${group.ref}" target="_blank">
                 <div>${group.definition}</div>
              </a>
           </td>`,
@@ -135,7 +135,7 @@ export const COLUMNS: ColumnDef[] = [
       cellHTML: (group, {cayleyTitle}) => {
          const selector = cayleyTitle != null ? `&diagram=${encodeURIComponent(cayleyTitle)}` : ''
          return `<td class="cayley-diagram center" data-tooltip="Open Cayley Diagram visualizer">
-             <a href="CayleyDiagram.html?groupURL=${group.URL}${selector}" target="_blank">
+             <a href="CayleyDiagram.html?groupURL=${group.ref}${selector}" target="_blank">
                 <img src="${group.thumbnails!.cayleyDiagram}" width="100px" height="100px">
              </a>
           </td>`
@@ -149,7 +149,7 @@ export const COLUMNS: ColumnDef[] = [
       defaultVisible: true,
       cellHTML: (group: Group) =>
          `<td class="multiplication-table center" data-tooltip="Open Multiplication Table visualizer">
-             <a href="Multtable.html?groupURL=${group.URL}" target="_blank">
+             <a href="Multtable.html?groupURL=${group.ref}" target="_blank">
                 <img src="${group.thumbnails!.multtable}" width="100px" height="100px">
              </a>
           </td>`,
@@ -164,7 +164,7 @@ export const COLUMNS: ColumnDef[] = [
          group.thumbnails!.symmetryObject == null
             ? `<td class="no-diagram center"><div>none</div></td>`
             : `<td class="symmetry-object center" data-tooltip="Open Symmetry Object visualizer">
-                  <a href="SymmetryObject.html?groupURL=${group.URL}" target="_blank">
+                  <a href="SymmetryObject.html?groupURL=${group.ref}" target="_blank">
                      <img src="${group.thumbnails!.symmetryObject}" width="100px" height="100px">
                   </a>
                </td>`,
@@ -177,7 +177,7 @@ export const COLUMNS: ColumnDef[] = [
       defaultVisible: true,
       cellHTML: (group: Group) =>
          `<td class="cycle-graph center" data-tooltip="Open Cycle Graph visualizer">
-             <a href="CycleGraph.html?groupURL=${group.URL}" target="_blank">
+             <a href="CycleGraph.html?groupURL=${group.ref}" target="_blank">
                 <img src="${group.thumbnails!.cycleGraph}" width="100px" height="100px">
              </a>
           </td>`,
@@ -395,7 +395,7 @@ function addToTable (tableElement: HTMLElement, group: Group, cayleyTitle: strin
    ).join('\n          ')
 
    ;(tableElement.querySelector('tbody') as HTMLElement).insertAdjacentHTML('beforeend',
-      `<tr data-group="${group.URL}" data-library="${groupLibrary}">
+      `<tr data-group="${group.ref}" data-library="${groupLibrary}">
           ${cells}
        </tr>`)
 }

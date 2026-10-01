@@ -16,7 +16,7 @@ import type { HighlightControlModelInterface, HighlightControlJSON } from './Hig
 import * as Library from './Library.js'
 
 export type CycleGraphJSON = {
-   group_url: string,
+   group_ref: string,
    highlight_colors?: Maybe<color>[][],
    highlight_control?: HighlightControlJSON
 }
@@ -45,7 +45,7 @@ export class CycleGraphModel implements HighlightControlModelInterface {
 
    toJSON (): CycleGraphJSON {
       const json = {
-         group_url: this.group.URL,
+         group_ref: this.group.ref,
          highlight_colors: this.highlightColors,
          highlight_control: isSerializable<HighlightControlJSON>(this.highlightControl)
             ? this.highlightControl.toJSON()
@@ -58,8 +58,8 @@ export class CycleGraphModel implements HighlightControlModelInterface {
    fromJSON (json: CycleGraphJSON) {
       this.reset()
 
-      if (json.group_url != null && this.group.URL != json.group_url) {
-         this.group = Library.getGroupByURL(json.group_url) as Group
+      if (json.group_ref != null && this.group.ref != json.group_ref) {
+         this.group = Library.getGroupByRef(json.group_ref) as Group
       }
       this.highlightColors = json.highlight_colors ?? this.highlightColors
       if (json.highlight_control != null) {

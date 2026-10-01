@@ -399,14 +399,14 @@ export function convertV1ToV2 (v1Objects: v1SheetType[]): v2SheetType[] {
             }
 
             if (  v1Visualizer.groupURL == null
-               || Library.getGroupByURL(v1Visualizer.groupURL) == null
+               || Library.getGroupByRef(v1Visualizer.groupURL) == null
                || (v1Visualizer.diagram_name == null && v1Visualizer.strategy_parameters == null)
             ) {
                Log.err('unrecognizable v1 json in SheetSerialization.convertV1ToV2')
                break
             }
 
-            const group = Library.getGroupByURL(v1Visualizer.groupURL) as Group
+            const group = Library.getGroupByRef(v1Visualizer.groupURL) as Group
 
             const strategyParameters = v1Visualizer.strategy_parameters?.map((strategy_parameter) => {
                return {...strategy_parameter}
@@ -500,7 +500,7 @@ export function convertV1ToV2 (v1Objects: v1SheetType[]): v2SheetType[] {
             ]
 
             const v2Visualizer: CayleyDiagramModelJSON = {
-               group_url: v1Visualizer.groupURL,
+               group_ref: `${Library.GAPID_GROUP_PREFIX}?${group.gapid}`,
                background: v1Visualizer.background,
                fog_level: v1Visualizer.fog_level,
                line_width: 4,  // meaning has changed since v1, just using default
@@ -525,8 +525,11 @@ export function convertV1ToV2 (v1Objects: v1SheetType[]): v2SheetType[] {
             if (v1Visualizer == null) {
                break
             }
+
+            const group = Library.getGroupByRef(v1Visualizer.groupURL) as Group
+
             const v2Visualizer: CycleGraphJSON = {
-               group_url: v1Visualizer.groupURL,
+               group_ref: `${Library.GAPID_GROUP_PREFIX}?${group.gapid}`,
                highlight_colors: formatHighlights(
                   [v1Visualizer?.highlights?.background, v1Visualizer?.highlights?.border, v1Visualizer?.highlights?.top],
                   [null, null, null]),
@@ -541,8 +544,11 @@ export function convertV1ToV2 (v1Objects: v1SheetType[]): v2SheetType[] {
             if (v1Visualizer == null) {
                break
             }
+
+            const group = Library.getGroupByRef(v1Visualizer.groupURL) as Group
+
             const v2Visualizer: MulttableJSON = {
-               group_url: v1Visualizer.groupURL,
+               group_ref: `${Library.GAPID_GROUP_PREFIX}?${group.gapid}`,
                highlight_colors: formatHighlights(
                   [v1Visualizer?.highlights?.background, v1Visualizer?.highlights?.border, v1Visualizer?.highlights?.corner],
                   ['#E5E5E5', null, null]),
@@ -587,7 +593,9 @@ export function convertV1ToV2 (v1Objects: v1SheetType[]): v2SheetType[] {
          case 'CGElement':
          case 'MTElement': {
             if (v1Object.groupURL != null) {
-               (v2Object as VisualizerElementJSON).visualizerJSON.group_url = v1Object.groupURL
+               const group = Library.getGroupByRef(v1Object.groupURL) as Group
+               ;(v2Object as VisualizerElementJSON).visualizerJSON.group_ref =
+                  `${Library.GAPID_GROUP_PREFIX}?${group.gapid}`
             }
             if ('visualizer' in v2Object && (v2Object as VisualizerElementJSON).visualizerJSON != null) {
                const v2Visualizer = (v2Object as VisualizerElementJSON).visualizerJSON as Record<string, unknown>

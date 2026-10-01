@@ -130,7 +130,7 @@ function showAsSheet (group:Group, type: SheetModel.VisualizerType) {
                 { className: 'TextElement', x: colX, y: numY, w: W, h: numH,
                   text: `${group.conjugacyClasses[fakeIndex].popcount()}`,
                   fontSize: `${fontSize}px`, alignment: 'center', opacity: 0 },
-                { className: type, groupURL: group.URL, diagram_name: group.cayleyDiagrams[0]?.name,
+                { className: type, group_ref: group.ref, diagram_name: group.cayleyDiagrams[0]?.name,
                   x: colX, y: vizY, w: W, h: H,
                   highlight_colors: [addHighlights(group, fakeIndex), [], []] }
             )
@@ -157,7 +157,7 @@ function showAsSheet (group:Group, type: SheetModel.VisualizerType) {
         { className: 'TextElement', x: lastX, y: numY, w: W, h: numH,
           text: `${group.order}`,
           fontSize: `${fontSize}px`, alignment: 'center', opacity: 0 },
-        { className: type, groupURL: group.URL, diagram_name: group.cayleyDiagrams[0]?.name,
+        { className: type, group_ref: group.ref, diagram_name: group.cayleyDiagrams[0]?.name,
           x: lastX, y: vizY, w: W, h: H,
           highlight_colors: [highlights, [], []] }
     )

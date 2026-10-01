@@ -14,7 +14,7 @@ export type CustomType = {
     notes?: html;
 };
 type GroupJSON = {
-    URL: string;
+    sourceURL?: string;
     author: string;
     cayleyDiagrams: XMLCayleyDiagram[];
     custom: CustomType;
@@ -53,7 +53,8 @@ export declare class Group {
     library?: void | 'extended' | 'notable' | 'generated';
     lastModifiedOnServer?: Maybe<string>;
     thumbnails?: ThumbnailsType;
-    URL: string;
+    sourceURL: Maybe<string>;
+    ref: string;
     constructor(multtable: groupElement[][]);
     static fromMulttable(multtable: groupElement[][]): Group;
     static fromGroupFileJSON(json: GroupJSON): Group;

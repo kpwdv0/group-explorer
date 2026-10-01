@@ -45,16 +45,16 @@ export async function load () {
       : {elementId: null, json: null})) as {elementId: Maybe<string>, json: Maybe<CayleyDiagramModelJSON>}
 
    // Get group, either from page URL or data from Sheet
-   const group: Group = await ((initialJSON?.group_url == null)
+   const group: Group = await ((initialJSON?.group_ref == null)
       ? Library.loadFromPageURL()
-      : Library.getGroupByURL(initialJSON.group_url)) as Group
+      : Library.getGroupByRef(initialJSON.group_ref)) as Group
 
    // Create Header
    Heading.display(
       document.getElementById('heading') as HTMLElement,
       `Cayley Diagram for ${group.name}`,
       () => [
-         {label: 'Group Info', action: () => window.open(`GroupInfo.html?groupURL=${group.URL}`)},
+         {label: 'Group Info', action: () => window.open(`GroupInfo.html?groupURL=${group.ref}`)},
          {label: 'Group Library', action: () => window.open('GroupExplorer.html')},
          {label: 'New Sheet', action: () => window.open('Sheet.html')},
          {label: '<hr>', action: () => {}},

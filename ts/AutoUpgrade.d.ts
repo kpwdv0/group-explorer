@@ -1,4 +1,3 @@
-export declare const EXTENDED_GROUP_PREFIX = "data:,//GE3/extended";
 export type ExtendedManifestEntry = {
     presentation: string;
     gapid: string;

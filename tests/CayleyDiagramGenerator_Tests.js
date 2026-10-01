@@ -8,8 +8,8 @@ let Z2, S3
 before(async function () {
    this.timeout(5000)
    await Library.loadLibrary()
-   Z2 = Library.getGroupByURL('../groups/Z_2.group')
-   S3 = Library.getGroupByURL('../groups/S_3.group')
+   Z2 = Library.getGroupByRef('../groups/Z_2.group')
+   S3 = Library.getGroupByRef('../groups/S_3.group')
 })
 
 // ---- tests ------------------------------------------------------------------

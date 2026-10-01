@@ -48,7 +48,7 @@ class ViewModel {
     }
     viewportOrigin() { return this.sheetViewModel.viewportOrigin(); }
     viewportScale() { return this.sheetViewModel.viewportScale(); }
-    addElement(className, groupURL) {
+    addElement(className, groupRef) {
         const { x, y } = this.viewportOrigin();
         const scale = this.viewportScale();
         const element = { x, y };
@@ -74,7 +74,7 @@ class ViewModel {
                 element.w = 0.1 * scale;
                 element.h = 0.1 * scale;
                 element.visualizerJSON = {
-                    group_url: groupURL
+                    group_ref: groupRef
                 };
                 break;
         }
@@ -116,7 +116,7 @@ class View {
         // setup initial group selection
         const mockSelectGroup = rootElement.querySelector('#visualizer-select-group');
         const trivialGroup = GroupRegistry.getGroupsByOrder(1)[0];
-        mockSelectGroup.setAttribute('data-value', trivialGroup.URL);
+        mockSelectGroup.setAttribute('data-value', trivialGroup.ref);
         mockSelectGroup.innerHTML = trivialGroup.name;
         this.showStoredSheets();
         const addElement = (className) => this.addElement(className);
@@ -144,12 +144,12 @@ class View {
         const groupChoices = [];
         byOrder.forEach((groups, order) => {
             if (groups.length === 1) {
-                groupChoices.push({ value: groups[0].URL, label: `${groups[0].name} (${order})` });
+                groupChoices.push({ value: groups[0].ref, label: `${groups[0].name} (${order})` });
             }
             else {
                 groupChoices.push({
                     header: `Order ${order} (${groups.length} groups)`,
-                    choices: groups.map((g) => ({ value: g.URL, label: g.name, selectedLabel: `${g.name} (${order})` }))
+                    choices: groups.map((g) => ({ value: g.ref, label: g.name, selectedLabel: `${g.name} (${order})` }))
                 });
             }
         });
@@ -157,9 +157,9 @@ class View {
         makeMockSelect(mockSelectGroup, groupChoices).then(() => { }, () => { });
     }
     addElement(className) {
-        const groupURL = this.rootElement.querySelector('#visualizer-select-group')
+        const groupRef = this.rootElement.querySelector('#visualizer-select-group')
             .getAttribute('data-value');
-        this.viewModel.addElement(className, groupURL);
+        this.viewModel.addElement(className, groupRef);
     }
     async showStoredSheets() {
         const sheetList = this.rootElement.querySelector('#stored-sheet-list');

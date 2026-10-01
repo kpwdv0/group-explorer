@@ -1,6 +1,6 @@
 // Unit tests for SheetModel -- currently just CDElement.fromJSON's diagram_control/layout
 // backfill, the fix for "a fresh sheet CDElement renders blank / opens with empty Generator and
-// Arrow panels": SheetControl.addElement creates visualizerJSON as {group_url} alone, and this is
+// Arrow panels": SheetControl.addElement creates visualizerJSON as {group_ref} alone, and this is
 // the one place (called for every CDElement built from JSON, fresh or loaded) that ensures
 // layout and, when nothing else was provided, diagram_control.strategy_parameters/arrow_generators
 // come out populated and coherent with each other.
@@ -16,7 +16,7 @@ let S3
 before(async function () {
    this.timeout(5000)
    await Library.loadLibrary()
-   S3 = Library.getGroupByURL('../groups/S_3.group')
+   S3 = Library.getGroupByRef('../groups/S_3.group')
 })
 
 function makeElement () {
@@ -31,7 +31,7 @@ describe('SheetModel', function () {
 
       it('backfills strategy_parameters, arrow_generators, and layout for a fresh element', function () {
          const element = makeElement()
-         element.fromJSON({id: '1', className: 'CDElement', visualizerJSON: {group_url: S3.URL}})
+         element.fromJSON({id: '1', className: 'CDElement', visualizerJSON: {group_ref: S3.ref}})
 
          expect(element.visualizerJSON.diagram_control.strategy_parameters)
             .to.be.an('array').with.length.greaterThan(0)
@@ -45,7 +45,7 @@ describe('SheetModel', function () {
          const element = makeElement()
          element.fromJSON({
             id: '1', className: 'CDElement',
-            visualizerJSON: {group_url: S3.URL, diagram_control: {strategy_parameters: strategyParameters}}
+            visualizerJSON: {group_ref: S3.ref, diagram_control: {strategy_parameters: strategyParameters}}
          })
 
          // layout is still computed (it was missing), but the caller's own strategy is kept as-is
@@ -59,7 +59,7 @@ describe('SheetModel', function () {
          const element = makeElement()
          element.fromJSON({
             id: '1', className: 'CDElement',
-            visualizerJSON: {group_url: group.URL, diagram_control: {diagram_name: group.cayleyDiagrams[0].name}}
+            visualizerJSON: {group_ref: group.ref, diagram_control: {diagram_name: group.cayleyDiagrams[0].name}}
          })
 
          expect(element.visualizerJSON.layout).to.not.be.undefined
@@ -68,7 +68,7 @@ describe('SheetModel', function () {
 
       it('leaves an already-computed layout alone', function () {
          const element = makeElement()
-         element.fromJSON({id: '1', className: 'CDElement', visualizerJSON: {group_url: S3.URL}})
+         element.fromJSON({id: '1', className: 'CDElement', visualizerJSON: {group_ref: S3.ref}})
          const firstLayout = element.visualizerJSON.layout
 
          const element2 = makeElement()
@@ -87,25 +87,25 @@ describe('SheetModel', function () {
 
       it('carries arrow_generators through when it is the only CDElement field given', function () {
          const [result] = translateRequest(
-            [{className: 'CDElement', groupURL: S3.URL, arrow_generators: arrowGenerators}])
+            [{className: 'CDElement', group_ref: S3.ref, arrow_generators: arrowGenerators}])
          expect(result.visualizerJSON.diagram_control).to.deep.equal({arrow_generators: arrowGenerators})
       })
 
       it('carries arrow_generators through alongside diagram_name', function () {
          const [result] = translateRequest(
-            [{className: 'CDElement', groupURL: S3.URL, diagram_name: 'foo', arrow_generators: arrowGenerators}])
+            [{className: 'CDElement', group_ref: S3.ref, diagram_name: 'foo', arrow_generators: arrowGenerators}])
          expect(result.visualizerJSON.diagram_control).to.deep.equal({diagram_name: 'foo', arrow_generators: arrowGenerators})
       })
 
       it('carries arrow_generators through alongside strategy_parameters', function () {
          const strategyParameters = getDefaultStrategies(S3)
          const [result] = translateRequest(
-            [{className: 'CDElement', groupURL: S3.URL, strategy_parameters: strategyParameters, arrow_generators: arrowGenerators}])
+            [{className: 'CDElement', group_ref: S3.ref, strategy_parameters: strategyParameters, arrow_generators: arrowGenerators}])
          expect(result.visualizerJSON.diagram_control).to.deep.equal({strategy_parameters: strategyParameters, arrow_generators: arrowGenerators})
       })
 
       it('leaves diagram_control unset when nothing CD-specific was given', function () {
-         const [result] = translateRequest([{className: 'CDElement', groupURL: S3.URL}])
+         const [result] = translateRequest([{className: 'CDElement', group_ref: S3.ref}])
          expect(result.visualizerJSON.diagram_control).to.be.undefined
       })
 

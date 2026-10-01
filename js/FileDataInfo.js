@@ -16,7 +16,7 @@ export function display(fileDataElementId, group) {
           </summary>
           <table>
              <tr><td>Author</td>         <td>${group.author}</td></tr>
-             <tr><td>URL</td>            <td>${group.URL}</td></tr>
+             <tr><td>URL</td>            <td>${group.sourceURL}</td></tr>
              <tr><td>Last modified</td>  <td>${group.lastModifiedOnServer}</td></tr>
           </table>
        </details>`;

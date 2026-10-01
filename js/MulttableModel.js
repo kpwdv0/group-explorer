@@ -41,7 +41,7 @@ export class MulttableModel {
     }
     toJSON() {
         const json = {
-            group_url: this.group.URL,
+            group_ref: this.group.ref,
             highlight_colors: this.highlightColors,
             highlight_control: isSerializable(this.highlightControl)
                 ? this.highlightControl.toJSON()
@@ -56,8 +56,8 @@ export class MulttableModel {
     }
     fromJSON(json) {
         this.reset();
-        if (json.group_url != null && this.group.URL != json.group_url) {
-            this.group = Library.getGroupByURL(json.group_url);
+        if (json.group_ref != null && this.group.ref != json.group_ref) {
+            this.group = Library.getGroupByRef(json.group_ref);
         }
         this.highlightColors = json.highlight_colors ?? this.highlightColors;
         this.organizingSubgroup = json.organizing_subgroup ?? this.organizingSubgroup;

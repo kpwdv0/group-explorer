@@ -209,6 +209,10 @@ async function migrateGroupsToV2(openRequest) {
             delete G.other_names;
         }
         G.names = names;
+        if (G.gapid != null && typeof G.gapid === 'string' && G.gapid.length != 0)
+            G.ref = `${Library.GAPID_GROUP_PREFIX}?${G.gapid}`;
+        G.sourceURL = G.URL;
+        delete G.URL;
         // add custom field
         const custom = {};
         // user representations
@@ -280,7 +284,7 @@ async function migrateSheetsToV2(openRequest) {
     const transaction = openRequest.transaction;
     const sheetStore = transaction.objectStore(SHEET_STORE);
     const backupStore = openRequest.result.createObjectStore(SHEET_BACKUP_STORE);
-    // Library.getGroupByURL is needed by migrateSheetToV2 (for layoutCayleyDiagram).
+    // Library.getGroupByRef is needed by migrateSheetToV2 (for layoutCayleyDiagram).
     // The normal loadLibrary() path can't be used here (it would open a new DB connection).
     // Groups were just moved to GENERAL_STORE by migrateGroupsToV2 — read them directly
     // from the upgrade transaction and populate the in-memory library.

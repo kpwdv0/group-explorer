@@ -70,7 +70,7 @@ function makeSolvableGroupContent(group) {
     return htmlFragments.join('');
 }
 function makeGroupRef(group) {
-    return `<a href="./GroupInfo.html?groupURL=${group.URL}" target="_blank">${group.name}</a>`;
+    return `<a href="./GroupInfo.html?groupURL=${group.ref}" target="_blank">${group.name}</a>`;
 }
 function findSolvableDecomposition(subgroup) {
     let decomposition;
@@ -126,7 +126,7 @@ function showSolvableDecompositionSheet(group, type) {
             // trivial group: shrink to W/3 and center in column
             sheetElementsAsJSON.push({
                 className: type, id: vizName,
-                groupURL: entry.isomorphicGroup.URL,
+                group_ref: entry.isomorphicGroup.ref,
                 x: L + W / 4, y: vizY + H / 4, w: W / 2, h: H / 2,
                 highlight_colors: [[GEUtils.fromRainbow(0, s, l)], [], []],
             });
@@ -141,7 +141,7 @@ function showSolvableDecompositionSheet(group, type) {
             });
             sheetElementsAsJSON.push({
                 className: type, id: vizName,
-                groupURL: entry.isomorphicGroup.URL,
+                group_ref: entry.isomorphicGroup.ref,
                 x: L + index * W + index * hgap, y: vizY, w: W, h: H,
                 highlight_colors: [highlights, [], []], organizing_subgroup: previous.subgroupIndex
             });
@@ -163,7 +163,7 @@ function showSolvableDecompositionSheet(group, type) {
             });
             sheetElementsAsJSON.push({
                 className: type, id: qVizName,
-                groupURL: previous.isomorphicQuotientGroup.URL,
+                group_ref: previous.isomorphicQuotientGroup.ref,
                 x: L + index * W + index * hgap + bottomShift, y: vizY + H + vgap,
                 w: W, h: H,
                 highlight_colors: [quotientGroupHighlights, [], []]

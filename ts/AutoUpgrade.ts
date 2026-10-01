@@ -16,9 +16,6 @@ In either case it leaves the group library loaded and ready for synchronous acce
 ```js
  */
 
-// Extended groups — generated from presentation, no .group files needed
-export const EXTENDED_GROUP_PREFIX = 'data:,//GE3/extended'
-
 // One curated entry in EXTENDED_MANIFEST: a group presentation plus the metadata Library stamps
 // onto the group it generates. Passed through to Library.updateGroups alongside base-library
 // URLs, so it's exported (with its guard) as the shared shape.

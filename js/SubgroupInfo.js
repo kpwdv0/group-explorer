@@ -199,7 +199,7 @@ function formatSubgroupListContent(group, subgroupIndex, cayleyDiagramThumbnailV
         '<div class="stack-03em" style="margin-left: 1ch">',
         `<div><i>H</i><sub>${subgroupIndex}</sub>${shortDescription(group, subgroup)} is
              <a href="./help/rf-groupterms/index.html#isomorphism-isomorphic">isomorphic</a> to
-             <a href="./GroupInfo.html?groupURL=${isomorphicGroup.URL}" target="_blank"
+             <a href="./GroupInfo.html?groupURL=${isomorphicGroup.ref}" target="_blank"
                 >${isomorphicGroup.name}</a>. You can see the embedding by
              <a href="" data-action="showEmbeddingSheet(group, ${subgroupIndex}, 'CDElement')">Cayley diagram</a>,
              <a href="" data-action="showEmbeddingSheet(group, ${subgroupIndex}, 'CGElement')">cycle graph</a>,
@@ -215,7 +215,7 @@ function formatSubgroupListContent(group, subgroupIndex, cayleyDiagramThumbnailV
                   See the <a href="./help/rf-groupterms/index.html#short-exact-sequence">short exact sequence</a>
                   exhibiting the
                   <a href="./help/rf-groupterms/index.html#quotient-group">quotient group</a>, isomorphic to 
-                  <a href="./GroupInfo.html?groupURL=${subgroup.isomorphicQuotientGroup.URL}" target="_blank"
+                  <a href="./GroupInfo.html?groupURL=${subgroup.isomorphicQuotientGroup.ref}" target="_blank"
                      >${subgroup.isomorphicQuotientGroup.name},</a> by
                   <a href="" data-action="showQuotientSheet(group, ${subgroupIndex}, 'CDElement')">Cayley diagram</a>,
                   <a href="" data-action="showQuotientSheet(group, ${subgroupIndex}, 'CGElement')">cycle graph</a>,
@@ -335,7 +335,7 @@ function showSubgroupLattice(group, type, reduced = false, labelled = false) {
             sheetElementsAsJSON.push({
                 className: type,
                 id: `viz-${subgroupIndex}`,
-                groupURL: group.URL,
+                group_ref: group.ref,
                 diagram_name: group.cayleyDiagrams[0]?.name,
                 x: latticeLeft + chains[subgroupIndex] * cellWidth + hMargin,
                 y: latticeTop + tiers[subgroupIndex] * cellHeight + vMargin,
@@ -384,7 +384,7 @@ function showSubgroupLattice(group, type, reduced = false, labelled = false) {
             sheetElementsAsJSON.push({
                 className: type,
                 id: `viz-${classIndex}`,
-                groupURL: group.URL,
+                group_ref: group.ref,
                 diagram_name: group.cayleyDiagrams[0]?.name,
                 x: latticeLeft + chains[classIndex] * cellWidth + hMargin,
                 y: latticeTop + tiers[classIndex] * cellHeight + vMargin,
@@ -512,12 +512,12 @@ function showEmbeddingSheet(group, indexOfH, type) {
     const vizY = 0.4 * (window.innerHeight - Hv);
     const embeddingSheet = [
         {
-            className: type, groupURL: libraryH.URL, id: '1',
+            className: type, group_ref: libraryH.ref, id: '1',
             x: L, y: vizY, w: W, h: Hv,
             highlight_colors: [Array(libraryH.order).fill('hsl(0, 100%, 80%)'), [], []]
         },
         {
-            className: type, groupURL: group.URL, id: '2',
+            className: type, group_ref: group.ref, id: '2',
             x: L + W + gap, y: vizY, w: W, h: Hv,
             highlight_colors: [Array(group.order).fill('')
                     .map((_, elt) => embedding.indexOf(elt) > -1 ? 'hsl(0, 100%, 80%)' : ''), [], []]
@@ -568,7 +568,7 @@ function showQuotientSheet(group, indexOfN, type) {
             alignment: 'center', fontSize: headerFontSize, opacity: 0
         },
         {
-            className: type, id: 'trivial1', groupURL: './groups/Trivial.group',
+            className: type, id: 'trivial1', group_ref: './groups/Trivial.group',
             x: loc1.x, y: loc1.y, w: loc1.w, h: loc1.h,
             highlight_colors: [high1, [], []]
         },
@@ -578,7 +578,7 @@ function showQuotientSheet(group, indexOfN, type) {
             text: libraryN.name, alignment: 'center', fontSize: headerFontSize, opacity: 0
         },
         {
-            className: type, id: 'n', groupURL: libraryN.URL,
+            className: type, id: 'n', group_ref: libraryN.ref,
             x: loc2.x, y: loc2.y, w: loc2.w, h: loc2.h,
             highlight_colors: [high2, [], []]
         },
@@ -588,7 +588,7 @@ function showQuotientSheet(group, indexOfN, type) {
             text: group.name, alignment: 'center', fontSize: headerFontSize, opacity: 0
         },
         {
-            className: type, id: 'g', groupURL: group.URL,
+            className: type, id: 'g', group_ref: group.ref,
             x: loc3.x, y: loc3.y, w: loc3.w, h: loc3.h,
             highlight_colors: [high3, [], []]
         },
@@ -598,7 +598,7 @@ function showQuotientSheet(group, indexOfN, type) {
             text: libraryQ.name, alignment: 'center', fontSize: headerFontSize, opacity: 0
         },
         {
-            className: type, id: 'q', groupURL: libraryQ.URL,
+            className: type, id: 'q', group_ref: libraryQ.ref,
             x: loc4.x, y: loc4.y, w: loc4.w, h: loc4.h,
             highlight_colors: [high4, [], []]
         },
@@ -609,7 +609,7 @@ function showQuotientSheet(group, indexOfN, type) {
             alignment: 'center', fontSize: headerFontSize, opacity: 0
         },
         {
-            className: type, id: 'trivial2', groupURL: './groups/Trivial.group',
+            className: type, id: 'trivial2', group_ref: './groups/Trivial.group',
             x: loc5.x, y: loc5.y, w: loc5.w, h: loc5.h,
             highlight_colors: [high5, [], []]
         },

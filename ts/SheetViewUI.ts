@@ -49,14 +49,6 @@ import {
    recognizeMoveResize
 } from './Gestures.js'
 
-/*::
-import type {CayleyDiagramJSON} from './CayleyDiagramView.js'
-import type {CycleGraphJSON} from './CycleGraphView.js'
-import type {MulttableJSON} from './MulttableView.js'
-
-type VizDispJSON = CayleyDiagramJSON | CycleGraphJSON | MulttableJSON
- */
-
 /*
 ## init
 
@@ -228,7 +220,7 @@ class SheetEventUI {
       ].join('')
 
       const openInfo = () =>
-         window.open('./GroupInfo.html?groupURL=' + (modelElement as SheetViewModel.VisualizerElement).group.URL)
+         window.open('./GroupInfo.html?groupURL=' + (modelElement as SheetViewModel.VisualizerElement).group.ref)
       makeDetachedMenu(contextMenuHTML, event)
          .then((action) => (action != null) && eval(action))
    }
@@ -284,7 +276,7 @@ class SheetEventUI {
       const allVisualizerElements = (Array
          .from(this.viewModel.modelElements.values())
          .filter((el) => 'isVisualizer' in el) as SheetViewModel.VisualizerElement[])
-         .sort((a, b) => (a.group.URL == b.group.URL) ? 0 : (a.group.URL < b.group.URL) ? -1 : 1)
+         .sort((a, b) => (a.group.ref == b.group.ref) ? 0 : (a.group.ref < b.group.ref) ? -1 : 1)
 
       this.redrawTimer = window.setTimeout((els: typeof allVisualizerElements) => {
          els.forEach((el) => el.viewElement?.redraw())

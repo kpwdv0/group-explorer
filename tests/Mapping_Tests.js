@@ -11,11 +11,11 @@ let Z2, Z3, Z4, Z6, S3
 before(async function () {
    this.timeout(5000)
    await Library.loadLibrary()
-   Z2 = Library.getGroupByURL('../groups/Z_2.group')
-   Z3 = Library.getGroupByURL('../groups/Z_3.group')
-   Z4 = Library.getGroupByURL('../groups/Z_4.group')
-   Z6 = Library.getGroupByURL('../groups/Z_6.group')
-   S3 = Library.getGroupByURL('../groups/S_3.group')
+   Z2 = Library.getGroupByRef('../groups/Z_2.group')
+   Z3 = Library.getGroupByRef('../groups/Z_3.group')
+   Z4 = Library.getGroupByRef('../groups/Z_4.group')
+   Z6 = Library.getGroupByRef('../groups/Z_6.group')
+   S3 = Library.getGroupByRef('../groups/S_3.group')
    // sanity: element 0 is the identity, orders are as the rest of the suite assumes
    expect(Z4.elementOrders).to.deep.equal([1, 4, 2, 4])
    expect(S3.elementOrders).to.deep.equal([1, 3, 3, 2, 2, 2])

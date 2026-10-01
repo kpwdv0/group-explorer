@@ -76,7 +76,7 @@ export class CayleyDiagramModel {
     }
     toJSON() {
         const json = {
-            group_url: this.group.URL,
+            group_ref: this.group.ref,
             layout: layoutToJSON(this.layout),
             background: this.background,
             fog_level: this.fog_level,
@@ -98,8 +98,8 @@ export class CayleyDiagramModel {
     }
     fromJSON(json) {
         this.reset();
-        if (json.group_url != null && this.group.URL != json.group_url) {
-            this.group = Library.getGroupByURL(json.group_url);
+        if (json.group_ref != null && this.group.ref != json.group_ref) {
+            this.group = Library.getGroupByRef(json.group_ref);
         }
         if (json.layout != null)
             this.layout = layoutFromJSON(json.layout);

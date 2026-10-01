@@ -37,16 +37,16 @@ export async function load () {
       : {elementId: null, json: null})) as {elementId: Maybe<string>, json: Maybe<CycleGraphJSON>}
 
    // Get group, either from page URL or data from Sheet
-   const group = await ((initialJSON?.group_url == null)
+   const group = await ((initialJSON?.group_ref == null)
       ? Library.loadFromPageURL()
-      : Library.getGroupByURL(initialJSON.group_url)) as Group  // FIXME: refine error for typo in URL
+      : Library.getGroupByRef(initialJSON.group_ref)) as Group  // FIXME: refine error for typo in URL
 
    // Create Header
    Heading.display (
       (document.getElementById('heading') as HTMLElement),
       `Cycle Graph for ${group.name}`,
       () => [
-         {label: 'Group Info', action: () => window.open(`GroupInfo.html?groupURL=${group.URL}`)},
+         {label: 'Group Info', action: () => window.open(`GroupInfo.html?groupURL=${group.ref}`)},
          {label: 'Group Library', action: () => window.open('GroupExplorer.html')},
          {label: 'New Sheet', action: () => window.open('Sheet.html')},
          {label: '<hr>', action: () => {}},

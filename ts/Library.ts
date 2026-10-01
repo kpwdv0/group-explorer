@@ -7,8 +7,9 @@ It is the sole writer of the registry; GroupRegistry is a leaf module
 so [DefiningRelations](./DefiningRelations.ts.md) and
 [IsomorphicGroups](./IsomorphicGroups.ts.md) can read it without a dependency cycle.
 
-Group definitions are stored as JSON strings, keyed by the URL from which the
-group was fetched, or the URI from which the group was generated.
+Group definitions are stored as JSON strings, keyed by the group's ref: a
+GAPID_GROUP_PREFIX URI for curated (base/extended) groups, or the GENERATED_GROUP_PREFIX
+URI of the presentation from which a generated group was built.
 The group objects created from these JSON strings are cached as key-value pairs
 in library.
 
@@ -20,7 +21,7 @@ Method overview (* are exported):
  * formatGenerators -- format array of generators for use in generated group definition
  * formatRelators -- format array of relators for use in generated group definition
  * formatRelator -- format single relator for use in generated group definition
- * getGroupByURL* -- return group from library by URL, generating it is needed
+ * getGroupByRef* -- return group from library by ref (or legacy source URL), generating it if needed
  * getStoredGroups -- get group library from local store
  * loadFromPageURL* -- get groupURL from window.location.href and return Promise to load it
  * loadFromStoredGroups* -- populate in-memory library from object
@@ -33,7 +34,7 @@ Method overview (* are exported):
 ```js
 */
 
-import { EXTENDED_GROUP_PREFIX, isExtendedManifestEntry } from './AutoUpgrade.js'
+import { isExtendedManifestEntry } from './AutoUpgrade.js'
 import { BitSet } from './BitSet.js'
 import * as DefiningRelations from './DefiningRelations.js'
 import { Group } from './Group.js'
@@ -43,30 +44,31 @@ import * as Log from './Log.js'
 import * as StoredObjects from './StoredObjects.js'
 import * as XMLGroup from './XMLGroup.js'
 
-import type { ExtendedManifestEntry } from './AutoUpgrade.js'
-import type { GroupFileJSON } from './Group.js'
-import type { Subgroup } from './Subgroup.js'
+import type { ExtendedManifestEntry } from './AutoUpgrade.ts'
+import type { GroupFileJSON } from './Group.ts'
+import type { Subgroup } from './Subgroup.ts'
 
 export { getAllGroups, getGroupsByOrder } from './GroupRegistry.js'
 
 export const GENERATED_GROUP_PREFIX = "data:,//GE3/generated"
-export {EXTENDED_GROUP_PREFIX} from './AutoUpgrade.js'
+export const GAPID_GROUP_PREFIX = "data:,//GE3/gapid"
 
 const library = GroupRegistry.groups
 
+// Load group library from local store
 export async function loadLibrary () {
-   const storedGroups = await getStoredGroups()
-   Object.keys(library).forEach((key) => delete library[key])  // clear library
-   Object.assign(library, storedGroups)
+   const storedGroupsJSON = ((await StoredObjects.getGroupLibrary()) || []) as GroupFileJSON[]
+   loadFromStoredGroups(storedGroupsJSON)
 }
 
-// Populate the in-memory library from a raw stored-groups object (used during DB migration,
-// when the DB connection isn't available for a normal loadLibrary() call)
-export function loadFromStoredGroups (storedGroups: unknown) {
-   // FIXME: check for valid input -- it's coming from conversion
-   (storedGroups as GroupFileJSON[]).forEach((json) => {
+// Populate the in-memory library from an array of GroupFileJSON objects
+// (This routine is also called directly during DB migration, when the DB connection
+//   isn't available for a normal loadLibrary() call)
+export function loadFromStoredGroups (storedGroupsJSON: unknown) {
+   library.clear()
+   ;(storedGroupsJSON as GroupFileJSON[]).forEach((json) => {
       const group: Group = Group.fromLocalCopyJSON(json)
-      library[group.URL] = group
+      library.set(group.ref, group)
    })
 }
 
@@ -95,8 +97,8 @@ function dataToGroup (data: unknown, contentType: string = ''): Group {
 // delete array of groups from library and update local store
 export function deleteGroups (groups: Group[]) {
    for (const group of groups) {
-      delete library[group.URL]
-      deletedGroupURLs.push(group.URL)
+      library.delete(group.ref)
+      deletedGroupURLs.push(group.ref)
    }
    scheduleLocalStoreUpdate()
 }
@@ -119,6 +121,7 @@ function decorateGeneratedGroup (
    group.names = [namePrefix + ` (${nameSuffix + 1})`]
    group.shortName = `Generated_${group.order}`
    group.definition = `⟨${formatGenerators(generatorNames)} : ${formatRelators(relators)}⟩`
+   group.ref = `${GENERATED_GROUP_PREFIX}?${generatorNames.join(',')}:${formatRelatorsAsString(relators)}`
    group.notes = 'Generated from definition'
    group.declaredGenerators = []
 
@@ -167,6 +170,15 @@ function formatRelators (relators: string[]) {
    return formattedRelators
 }
 
+function formatRelatorsAsString (relators: string[]) {
+   return formatRelators(relators)
+      .replaceAll('<i>', '')
+      .replaceAll('</i>', '')
+      .replaceAll('<sup>', '')
+      .replaceAll('</sup>', '')
+      .replaceAll('<wbr>', '')
+}
+
 function formatRelator (relator: string) {
    const translatedRelator = []
    let currentChar = relator.charAt(0)
@@ -190,39 +202,25 @@ function formatRelator (relator: string) {
    return translatedRelator.join('')
 }
 
-// returns group from library by URL, generating it if needed
-export function getGroupByURL (url: string): Maybe<Group> {
-   let group: Maybe<Group> = library[absoluteURL(url)]
-   if (group == null) {
+// returns group from library by ref (or legacy source URL), generating it if needed
+export function getGroupByRef (url: string): Maybe<Group> {
+   let group: Maybe<Group> = url.startsWith('data:,//GE3') ? library.get(url) : null
+   if (!url.startsWith('data:,//GE3')) {  // legacy support for true URLs
+      group = GroupRegistry.getAllGroups().find((group) => group.sourceURL === absoluteURL(url))
+   } else if (group == null && url.startsWith(GENERATED_GROUP_PREFIX)) {  // asking for a generated group we don't have
       const presentation = new URL(url).search.slice(1)
-      if (url.startsWith(GENERATED_GROUP_PREFIX)) {
-         const result = DefiningRelations.generateGroupFromPresentation(presentation)
-         if (result != null) {
-            const candidate = Group.fromMulttable(result.multtable)
-            // library invariant: groups are unique up to isomorphism -- prefer an existing
-            // match over decorating and saving a redundant generated duplicate
-            const isomorphicGroup = IsomorphicGroups.find(candidate)
-            if (isomorphicGroup != null) {
-               group = isomorphicGroup
-            } else {
-               const [generatorNames, relators] = DefiningRelations.parseFormattedPresentation(presentation)
-               decorateGeneratedGroup(candidate, generatorNames, relators, result.generators)
-               candidate.library = 'generated'
-               candidate.URL = url
-               saveGroup(candidate)
-               group = candidate
-            }
-         }
-      } else if (url.startsWith(EXTENDED_GROUP_PREFIX)) {
-         // extended-library groups are curated by presentation, not deduplicated against
-         // isomorphic library entries -- each carries its own manifest metadata (GAP id, etc.)
-         const result = DefiningRelations.generateGroupFromPresentation(presentation)
-         if (result != null) {
-            const candidate = Group.fromMulttable(result.multtable)
+      const result = DefiningRelations.generateGroupFromPresentation(presentation)
+      if (result != null) {
+         const candidate = Group.fromMulttable(result.multtable)
+         // library invariant: groups are unique up to isomorphism -- prefer an existing
+         // match over decorating and saving a redundant generated duplicate
+         const isomorphicGroup = IsomorphicGroups.find(candidate)
+         if (isomorphicGroup != null) {
+            group = isomorphicGroup
+         } else {
             const [generatorNames, relators] = DefiningRelations.parseFormattedPresentation(presentation)
             decorateGeneratedGroup(candidate, generatorNames, relators, result.generators)
-            candidate.library = 'extended'
-            candidate.URL = url
+            candidate.library = 'generated'
             saveGroup(candidate)
             group = candidate
          }
@@ -232,18 +230,6 @@ export function getGroupByURL (url: string): Maybe<Group> {
    return group
 }
 
-// Read group library from local store
-async function getStoredGroups (): Promise<GroupRegistry.GroupRegistryType> {
-   const storedGroupsJSON = ((await StoredObjects.getGroupLibrary()) || []) as GroupFileJSON[]
-   const storedGroups = {} as GroupRegistry.GroupRegistryType
-   storedGroupsJSON.forEach((json) => {
-      const group: Group = Group.fromLocalCopyJSON(json)
-      storedGroups[group.URL] = group
-   })
-
-   return storedGroups
-}
-
 // get groupURL from page invocation and return promise for resolution from cache or download
 export async function loadFromPageURL (): Promise<Group> {
    try {
@@ -251,9 +237,9 @@ export async function loadFromPageURL (): Promise<Group> {
       const groupURL = hrefURL.searchParams.get('groupURL')
       let result: Maybe<Group> = null
       if (groupURL != null) {
-         result = getGroupByURL(groupURL)
+         result = getGroupByRef(groupURL)
          if (result == null) {
-            if (groupURL.startsWith(GENERATED_GROUP_PREFIX) || groupURL.startsWith(EXTENDED_GROUP_PREFIX)) {
+            if (groupURL.startsWith('data:,//GE3')) {  // a ref, not a downloadable URL
                throw new Error(`Failed to generate group from URI "${groupURL}"`)
             } else {
                result = await downloadGroup(groupURL)
@@ -332,7 +318,10 @@ export async function loadFromPageURL (): Promise<Group> {
                            {cause: response}))
                      } else {
                         remoteGroup.lastModifiedOnServer = response.headers.get('last-modified')
-                        remoteGroup.URL = groupURL
+                        remoteGroup.sourceURL = groupURL
+                        // not a curated library group, so its identity is its (host-specific) location:
+                        //   a gapid ref could collide with, and replace, the curated group of that gapid
+                        remoteGroup.ref = groupURL
                         saveGroup(remoteGroup)
                         resolve(remoteGroup)
                      }
@@ -358,12 +347,12 @@ export async function loadFromPageURL (): Promise<Group> {
 // updates library group definitions and schedules local store update
 export function saveGroup (group: Maybe<Group>) {
    if (group != null) {
-      if (library[group.URL] == null) {
-         createdGroupURLs.push(group.URL)
+      if (library.has(group.ref)) {
+         updatedGroupURLs.push(group.ref)
       } else {
-         updatedGroupURLs.push(group.URL)
+         createdGroupURLs.push(group.ref)
       }
-      library[group.URL] = group
+      library.set(group.ref, group)
    }
    scheduleLocalStoreUpdate()
 }
@@ -427,7 +416,7 @@ write). `updateGroups` finishes with it.
 ```javascript
  */
 export function saveLibrary (): Promise<unknown> {
-   return StoredObjects.saveGroupLibrary(Object.values(library))
+   return StoredObjects.saveGroupLibrary(Array.from(library.values()))
 }
 
 // Fetch/generate exactly the groups named in a manifest -- a mix of base-library `.group` URLs
@@ -445,7 +434,7 @@ export async function updateGroups (manifest: ReadonlyArray<string | ExtendedMan
    // base library: (re)fetch one .group file, honoring If-Modified-Since and preserving any
    // user customization already stored for it
    const refreshFetchedGroup = async (groupURL: string): Promise<void> => {
-      const localGroup = getGroupByURL(groupURL)
+      const localGroup = getGroupByRef(groupURL)
 
       const options: RequestInit = { cache: 'no-cache', mode: 'no-cors' }
       if (localGroup?.lastModifiedOnServer != null) {
@@ -458,25 +447,36 @@ export async function updateGroups (manifest: ReadonlyArray<string | ExtendedMan
          const text = await response.text()
          const freshGroup = dataToGroup(text)
          freshGroup.lastModifiedOnServer = response.headers.get('last-modified')
-         freshGroup.URL = groupURL
+         freshGroup.sourceURL = groupURL
+         freshGroup.ref = `${GAPID_GROUP_PREFIX}?${freshGroup.gapid}`
 
          // preserve user customization
          if (localGroup?.custom != null) {
             Object.assign(freshGroup.custom, localGroup.custom)
          }
 
-         library[groupURL] = freshGroup
+         library.set(freshGroup.ref, freshGroup)
       }
    }
 
-   // extended library: generate the group from its presentation (getGroupByURL runs Todd-Coxeter
-   // and the generated-group decoration) then stamp on the manifest's curated GAP metadata
+   // extended library: generate the group from its presentation, and add the manifest's curated metadata
+   // extended-library groups are curated by presentation, not deduplicated against isomorphic library entries
    const generateExtendedGroup = (entry: ExtendedManifestEntry): void => {
-      const group = getGroupByURL(`${EXTENDED_GROUP_PREFIX}?${entry.presentation}`)
+      let group = library.get(`${GAPID_GROUP_PREFIX}?${entry.gapid}`)
+      if (group == null) {
+         const result = DefiningRelations.generateGroupFromPresentation(entry.presentation)
+         if (result != null) {
+            group = Group.fromMulttable(result.multtable)
+            const [generatorNames, relators] = DefiningRelations.parseFormattedPresentation(entry.presentation)
+            decorateGeneratedGroup(group, generatorNames, relators, result.generators)
+            group.library = 'extended'
+         }
+      }
       if (group != null) {
          group.gapid   = entry.gapid
          group.gapname = entry.gapname
          group.names   = entry.names
+         group.ref = `${GAPID_GROUP_PREFIX}?${entry.gapid}`
          if (entry.link != null)   group.links  = [entry.link]
          if (entry.phrase != null) group.phrase = entry.phrase
          saveGroup(group)

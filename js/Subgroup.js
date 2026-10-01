@@ -101,7 +101,7 @@ export class Subgroup {
         if (libraryGroup == null) {
             const presentation = DefiningRelations.makePresentation(G);
             const presentationURL = Library.GENERATED_GROUP_PREFIX + '?' + presentation;
-            libraryGroup = Library.getGroupByURL(presentationURL);
+            libraryGroup = Library.getGroupByRef(presentationURL);
         }
         return libraryGroup;
     }

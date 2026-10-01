@@ -247,9 +247,9 @@ export class VisualizerElement extends NodeElement {
     visualizerJSON;
     isVisualizer = true;
     fromJSON(jsonObject) {
-        this.group = Library.getGroupByURL(jsonObject.visualizerJSON.group_url);
+        this.group = Library.getGroupByRef(jsonObject.visualizerJSON.group_ref);
         if (this.group == null) {
-            const errorMessage = `unable to get group from ${jsonObject.visualizerJSON.group_url}`;
+            const errorMessage = `unable to get group from ${jsonObject.visualizerJSON.group_ref}`;
             Log.err(errorMessage);
             throw new TypeError(errorMessage);
         }
@@ -268,7 +268,7 @@ export class CDElement extends VisualizerElement {
         };
     }
     // The one place a CDElement's visualizerJSON gets completed -- for both a freshly-added
-    // element (SheetControl.addElement gives it just {group_url}) and one loaded from a saved
+    // element (SheetControl.addElement gives it just {group_ref}) and one loaded from a saved
     // sheet -- so SheetView never has to tell the difference. See docs/README.md § The Sheet
     // system for why this belongs here and not in the View.
     fromJSON(jsonObject) {
@@ -420,8 +420,8 @@ export class MorphismElement extends LinkElement {
         this.fontSize = jsonObject.fontSize ?? null;
         this.useMulttableSourceTopRow = jsonObject.useMulttableSourceTopRow ?? false;
         this.useMulttableDestinationTopRow = jsonObject.useMulttableDestinationTopRow ?? false;
-        const sourceGroup = Library.getGroupByURL(this.source.visualizerJSON.group_url);
-        const destinationGroup = Library.getGroupByURL(this.destination.visualizerJSON.group_url);
+        const sourceGroup = Library.getGroupByRef(this.source.visualizerJSON.group_ref);
+        const destinationGroup = Library.getGroupByRef(this.destination.visualizerJSON.group_ref);
         this.mapping = new Mapping(sourceGroup, destinationGroup, jsonObject.definingPairs);
         return this;
     }
@@ -476,7 +476,7 @@ export function translateRequest(requests) {
         // create visualizer and move relevant values to visualizer
         if (isVisualizer(result)) {
             result.visualizerJSON = {
-                group_url: request.groupURL,
+                group_ref: request.group_ref,
                 highlight_colors: request.highlight_colors ?? [[], [], []]
             };
             if (isCDElement(result)) {

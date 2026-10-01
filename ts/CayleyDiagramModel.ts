@@ -39,7 +39,7 @@ export { DEFAULT_NODE_COLOR } from './CayleyDiagramView.js'
 export type { POV, NodeType, ArrowType, ChunkType, LayoutType } from './CayleyDiagramView.ts'
 
 export type CayleyDiagramModelJSON = {
-   group_url: string,
+   group_ref: string,
    layout: Maybe<LayoutJSON>,
    background: CayleyDiagramModel['background'],
    fog_level: CayleyDiagramModel['fog_level'],
@@ -108,7 +108,7 @@ export class CayleyDiagramModel implements HighlightControlModelInterface {
 
    toJSON (): CayleyDiagramModelJSON {
       const json = {
-         group_url: this.group.URL,
+         group_ref: this.group.ref,
          layout: layoutToJSON(this.layout),
          background: this.background,
          fog_level: this.fog_level,
@@ -133,8 +133,8 @@ export class CayleyDiagramModel implements HighlightControlModelInterface {
    fromJSON (json: CayleyDiagramModelJSON) {
       this.reset()
 
-      if (json.group_url != null && this.group.URL != json.group_url) {
-         this.group = Library.getGroupByURL(json.group_url) as Group
+      if (json.group_ref != null && this.group.ref != json.group_ref) {
+         this.group = Library.getGroupByRef(json.group_ref) as Group
       }
 
       if (json.layout != null)

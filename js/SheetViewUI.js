@@ -33,6 +33,7 @@
 import * as GEUtils from './GEUtils.js';
 import * as SheetView from './SheetView.js';
 import * as SubgroupInfo from './SubgroupInfo.js';
+import * as THREE from '../lib/externals.js';
 import { TextEditor, ConnectionEditor, MorphismEditor, RemoteEditor } from './SheetModelEditors.js';
 import { makeDetachedMenu, makeDialog } from './UIComponents.js';
 import { recognizeSelect, recognizeContextMenu, recognizeDragAndDrop, recognizeZoom, recognizeMoveResize } from './Gestures.js';
@@ -206,11 +207,16 @@ class SheetEventUI {
         makeDetachedMenu(contextMenuHTML, event)
             .then((action) => (action != null) && eval(action));
     }
-    // Left click drag to move element
+    // Left click drag to move element, or the whole sheet if the drag starts on empty space
     setupMove() {
         let redrawTimerId = null;
-        recognizeMoveResize(this.rootElement, (dx, dy, _dw, _dh, _isDrop, domElement) => {
-            if (domElement != null && redrawTimerId == null) {
+        recognizeMoveResize(this.rootElement, (dx, dy, dw, dh, _isDrop, domElement) => {
+            //dw/dh are only nonzero for resizes and zooms, which shouldn't pan
+            if (domElement == null && dw == 0 && dh == 0) {
+                SheetView.pan(dx, dy);
+                this.scheduleRedraw();
+            }
+            else if (domElement != null && redrawTimerId == null) {
                 const element = this.viewModel.modelElements.get(elementIdOf(domElement));
                 const id = element?.anchor_id ?? element?.id;
                 if (id != null) {
@@ -231,12 +237,39 @@ class SheetEventUI {
             this.scheduleRedraw();
         }, { rightClick: true });
     }
-    // Resize sheet with mouse wheel if no element is selected
+    //pinch or mouse wheel to zoom, trackpad scroll to pan
     setupZoom() {
-        recognizeZoom(this.rootElement, (zoomFactor) => {
-            SheetView.zoom(1 + zoomFactor);
+        if (GEUtils.isTouchDevice()) {
+            recognizeZoom(this.rootElement, (zoomFactor) => {
+                SheetView.zoom(1 + zoomFactor);
+                this.scheduleRedraw();
+            });
+            return;
+        }
+        //trackpad pinch shows up as a wheel event with ctrlKey. preventDefault so the page doesn't zoom too
+        this.rootElement.addEventListener('wheel', (event) => {
+            if (event.target.closest('.scrollable') != null) {
+                return;
+            }
+            event.preventDefault();
+            const pixels = (event.deltaMode === WheelEvent.DOM_DELTA_LINE) ? 16 : 1; //firefox mouse wheels report lines
+            //browsers don't say mouse or trackpad, so guess: mouse wheels move in big whole steps
+            const mouseWheel = event.deltaMode !== WheelEvent.DOM_DELTA_PIXEL
+                || (event.deltaX === 0 && Number.isInteger(event.deltaY) && Math.abs(event.deltaY) >= 50);
+            if (event.ctrlKey || mouseWheel) {
+                //zoom around the cursor, capped so one wheel click isn't huge
+                const delta = Math.max(-10, Math.min(10, event.deltaY * pixels));
+                const cursor = new THREE.Vector2(event.clientX - SheetView.graphicRect.x, event.clientY - SheetView.graphicRect.y);
+                const anchor = SheetView.displayToModel(cursor);
+                SheetView.zoom(Math.exp(-delta * 0.01));
+                const drift = cursor.sub(SheetView.modelToDisplay(anchor));
+                SheetView.pan(drift.x, drift.y);
+            }
+            else {
+                SheetView.pan(-event.deltaX * pixels, -event.deltaY * pixels);
+            }
             this.scheduleRedraw();
-        });
+        }, { passive: false });
     }
     // For operations that may be performed repeatedly in rapid succession, like zoom and pan,
     // don't attempt to redraw the sheet on every event, but only periodically

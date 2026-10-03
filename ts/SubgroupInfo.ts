@@ -345,8 +345,10 @@ function showSubgroupLattice (
    // Use tiers/chains from layoutNode to construct the sheet
    const hSize = Math.max(...chains) + 1
    const vSize = subgroupOrders.length
-   const horizontalSpace = window.innerWidth - SheetModel.sheetPanelWidth()
-   const verticalSpace = window.innerHeight - (document.getElementById('heading') as HTMLElement).offsetHeight
+   //use the screen size, a half screen window made the nodes tiny
+   const horizontalSpace = Math.max(window.innerWidth, window.screen.availWidth) - SheetModel.sheetPanelWidth()
+   const verticalSpace = Math.max(window.innerHeight, window.screen.availHeight)
+      - (document.getElementById('heading') as HTMLElement).offsetHeight
 
    const naturalWidth = horizontalSpace / hSize
    const naturalHeight = verticalSpace / vSize

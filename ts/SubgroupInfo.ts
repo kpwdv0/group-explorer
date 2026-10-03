@@ -395,23 +395,14 @@ function showSubgroupLattice (
             y : latticeTop + tiers[subgroupIndex] * cellHeight + vMargin,
             w : cellWidth - 2 * hMargin,
             h : cellHeight - 2 * vMargin,
-            highlight_colors : [highlightSubgroup(group, H, type), [], []]
-         })
-
-         const conjugacyClass = conjugateSubgroupClasses.findIndex((klass) => klass.isSet(subgroupIndex))
-
-         sheetElementsAsJSON.push({
-            className: 'TextElement',
-            id: `sub-${subgroupIndex}`,
-            anchor_id: `viz-${subgroupIndex}`,
-            text: captions[subgroupIndex],
-            fontColor: H.isNormal ? 'blue' : 'black',
-            color: colors[conjugacyClass],
-            alignment: 'center',
-            fontSize: fontSize,
-            x: latticeLeft + chains[subgroupIndex] * cellWidth + hMargin,
-            y: latticeTop + tiers[subgroupIndex] * cellHeight + vMargin + cellHeight - 2 * vMargin,
-            w: cellWidth - 2 * hMargin,
+            highlight_colors : [highlightSubgroup(group, H, type), [], []],
+            subgroup_index : subgroupIndex,
+            caption : {
+               text : captions[subgroupIndex],
+               color : colors[conjugateSubgroupClasses.findIndex((klass) => klass.isSet(subgroupIndex))],
+               fontColor : H.isNormal ? 'blue' : 'black',
+               fontSize : fontSize
+            }
          })
       } )
    } else {
@@ -564,7 +555,7 @@ function layoutNodes (nodeTiers: integer[], edges: BitSet[]): number[] {
    return nodePositions
 }
 
-function showEmbeddingSheet (group: Group, indexOfH: number, type: SheetModel.VisualizerType) {
+export function showEmbeddingSheet (group: Group, indexOfH: number, type: SheetModel.VisualizerType) {
    const H = group.subgroups[indexOfH]
    const libraryH = H.isomorphicGroup
    const embedding = H.isomorphicGroupEmbedding
@@ -604,7 +595,7 @@ function showEmbeddingSheet (group: Group, indexOfH: number, type: SheetModel.Vi
    SheetModel.createNewSheet({title: title, elements: embeddingSheet})
 }
 
-function showQuotientSheet (group: Group, indexOfN: number, type: SheetModel.VisualizerType) {
+export function showQuotientSheet (group: Group, indexOfN: number, type: SheetModel.VisualizerType) {
    const N = group.subgroups[indexOfN]
    const libraryQ = N.isomorphicQuotientGroup as Group
    const quotientMap = N.isomorphicQuotientMap as number[]

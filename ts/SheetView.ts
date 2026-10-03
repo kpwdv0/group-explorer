@@ -384,12 +384,24 @@ export abstract class VisualizerView extends NodeView {
 
    unitSquarePositions!: Array<THREE.Vector2>
    lastZoom!: float
+   captionElement: Maybe<HTMLElement> = null
    protected _highlightSubscriber!: Updatable
 
    constructor (view: View, modelElement: VisualizerElement, domElement?: HTMLElement) {
       super(view, modelElement, domElement)
 
       this.domElement.classList.add('VisualizerElement')
+
+      //domElement is a canvas so the caption can't go inside it
+      if (modelElement.caption != null) {
+         const caption = document.createElement('div')
+         caption.dataset.nodeId = modelElement.id
+         caption.classList.add('NodeElement', 'draggable', 'VisualizerCaption')
+         Object.assign(caption.style,
+            {position: 'absolute', left: '0', top: '0', transformOrigin: 'top left', textAlign: 'center', lineHeight: '1.2'})
+         Graphic.append(caption)
+         this.captionElement = caption
+      }
    }
 
    // FIXME: what interface do we need from visualizer?
@@ -400,6 +412,11 @@ export abstract class VisualizerView extends NodeView {
   updateTransform () {
     const transformZoom = zoomFactor / this.lastZoom
     this.domElement.style.transform =  makeCssTransform(transformZoom, undefined, modelToDisplay(this.position))
+
+    if (this.captionElement != null) {
+       const below = this.position.add(new THREE.Vector2(0, this.modelElement.h))
+       this.captionElement.style.transform = makeCssTransform(zoomFactor, undefined, modelToDisplay(below))
+    }
   }
 
   redraw () {
@@ -409,6 +426,31 @@ export abstract class VisualizerView extends NodeView {
     this.visualizer.showGraphic()
 
     this.unitSquarePositions = this.visualizer.unitSquarePositions()
+    this.drawCaption()
+  }
+
+  protected drawCaption () {
+    const caption = this.modelElement.caption
+    if (this.captionElement != null && caption != null) {
+       this.captionElement.innerHTML = caption.text
+       this.captionElement.style.width = `${this.modelElement.w}px`
+       this.captionElement.style.backgroundColor = caption.color ?? 'transparent'
+       this.captionElement.style.color = caption.fontColor ?? 'black'
+       this.captionElement.style.fontSize = caption.fontSize ?? '16px'
+       this.captionElement.style.zIndex = this.modelElement.z.toString()
+    }
+  }
+
+  updateZ () {
+    super.updateZ()
+    if (this.captionElement != null) {
+       this.captionElement.style.zIndex = this.modelElement.z.toString()
+    }
+  }
+
+  destroy () {
+    this.captionElement?.remove()
+    super.destroy()
   }
 
    restoreHighlights (
@@ -635,6 +677,7 @@ export class CDView extends VisualizerView {
       context.drawImage(this.visualizer.view.canvas, 0, 0)
 
       this.unitSquarePositions = (CDView.sharedViewModel as CayleyDiagramViewModel).unitSquarePositions()
+      this.drawCaption()
    }
 
    restoreHighlights (

@@ -245,7 +245,16 @@ export class TextElement extends NodeElement {
 export class VisualizerElement extends NodeElement {
     group;
     visualizerJSON;
+    caption = null;
+    subgroupIndex = null;
     isVisualizer = true;
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            ...(this.caption != null && { caption: this.caption }),
+            ...(this.subgroupIndex != null && { subgroup_index: this.subgroupIndex })
+        };
+    }
     fromJSON(jsonObject) {
         this.group = Library.getGroupByRef(jsonObject.visualizerJSON.group_ref);
         if (this.group == null) {
@@ -254,7 +263,12 @@ export class VisualizerElement extends NodeElement {
             throw new TypeError(errorMessage);
         }
         super.fromJSON(jsonObject);
+        this.caption = jsonObject.caption ?? null;
+        this.subgroupIndex = jsonObject.subgroup_index ?? null;
         return this;
+    }
+    get subgroup() {
+        return (this.subgroupIndex == null) ? null : this.group.subgroups[this.subgroupIndex];
     }
 }
 export class CDElement extends VisualizerElement {

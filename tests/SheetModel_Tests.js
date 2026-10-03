@@ -109,6 +109,47 @@ describe('SheetModel', function () {
          expect(result.visualizerJSON.diagram_control).to.be.undefined
       })
 
+      it('keeps caption and subgroup_index on the element, not in visualizerJSON', function () {
+         const caption = {text: 'H<sub>4</sub>'}
+         const [result] = translateRequest(
+            [{className: 'CDElement', group_ref: S3.ref, caption, subgroup_index: 4}])
+         expect(result.caption).to.equal(caption)
+         expect(result.subgroup_index).to.equal(4)
+         expect(result.visualizerJSON).to.not.have.any.keys('caption', 'subgroup_index')
+      })
+
+   })
+
+   //lattice nodes keep their subgroup so the menu can use it
+   describe('visualizer caption and subgroup', function () {
+
+      //getVisualizerJSON normally gets added by SheetViewModel
+      function fromJSON (json) {
+         const element = makeElement().fromJSON({id: '1', className: 'CDElement', visualizerJSON: {group_ref: S3.ref}, ...json})
+         element.getVisualizerJSON = () => element.visualizerJSON
+         return element
+      }
+
+      it('round-trips caption and subgroup_index', function () {
+         const caption = {text: 'H<sub>4</sub> = ⟨ r ⟩', color: '#d8d8d8', fontColor: 'blue', fontSize: '14px'}
+         const json = fromJSON({caption, subgroup_index: 4}).toJSON()
+         expect(json.caption).to.deep.equal(caption)
+         expect(json.subgroup_index).to.equal(4)
+      })
+
+      //not S3, other tests can reload the library
+      it('finds its subgroup from subgroup_index', function () {
+         const element = fromJSON({subgroup_index: 4})
+         expect(element.subgroup).to.equal(element.group.subgroups[4])
+         expect(element.subgroup.order).to.equal(3)  //H_4 is the rotations
+      })
+
+      it('leaves both out of the JSON for a plain visualizer', function () {
+         const element = fromJSON({})
+         expect(element.subgroup).to.be.null
+         expect(element.toJSON()).to.not.have.any.keys('caption', 'subgroup_index')
+      })
+
    })
 
 })

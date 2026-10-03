@@ -345,21 +345,14 @@ function showSubgroupLattice(group, type, reduced = false, labelled = false) {
                 y: latticeTop + tiers[subgroupIndex] * cellHeight + vMargin,
                 w: cellWidth - 2 * hMargin,
                 h: cellHeight - 2 * vMargin,
-                highlight_colors: [highlightSubgroup(group, H, type), [], []]
-            });
-            const conjugacyClass = conjugateSubgroupClasses.findIndex((klass) => klass.isSet(subgroupIndex));
-            sheetElementsAsJSON.push({
-                className: 'TextElement',
-                id: `sub-${subgroupIndex}`,
-                anchor_id: `viz-${subgroupIndex}`,
-                text: captions[subgroupIndex],
-                fontColor: H.isNormal ? 'blue' : 'black',
-                color: colors[conjugacyClass],
-                alignment: 'center',
-                fontSize: fontSize,
-                x: latticeLeft + chains[subgroupIndex] * cellWidth + hMargin,
-                y: latticeTop + tiers[subgroupIndex] * cellHeight + vMargin + cellHeight - 2 * vMargin,
-                w: cellWidth - 2 * hMargin,
+                highlight_colors: [highlightSubgroup(group, H, type), [], []],
+                subgroup_index: subgroupIndex,
+                caption: {
+                    text: captions[subgroupIndex],
+                    color: colors[conjugateSubgroupClasses.findIndex((klass) => klass.isSet(subgroupIndex))],
+                    fontColor: H.isNormal ? 'blue' : 'black',
+                    fontSize: fontSize
+                }
             });
         });
     }
@@ -501,7 +494,7 @@ function layoutNodes(nodeTiers, edges) {
     nodePositions[0] = nodePositions[nodePositions.length - 1] = maxPosition / 2;
     return nodePositions;
 }
-function showEmbeddingSheet(group, indexOfH, type) {
+export function showEmbeddingSheet(group, indexOfH, type) {
     const H = group.subgroups[indexOfH];
     const libraryH = H.isomorphicGroup;
     const embedding = H.isomorphicGroupEmbedding;
@@ -535,7 +528,7 @@ function showEmbeddingSheet(group, indexOfH, type) {
     const title = `Embedding ${libraryH.name} as <i>H</i><sub>${indexOfH}</sub> in ${group.name}`;
     SheetModel.createNewSheet({ title: title, elements: embeddingSheet });
 }
-function showQuotientSheet(group, indexOfN, type) {
+export function showQuotientSheet(group, indexOfN, type) {
     const N = group.subgroups[indexOfN];
     const libraryQ = N.isomorphicQuotientGroup;
     const quotientMap = N.isomorphicQuotientMap;

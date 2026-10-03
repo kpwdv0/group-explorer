@@ -20,6 +20,7 @@ import type { CayleyDiagramModelJSON } from './CayleyDiagramModel.js'
 import type { CycleGraphJSON } from './CycleGraphModel.ts'
 import type { Group } from './Group.ts'
 import type { MulttableJSON } from './MulttableModel.ts'
+import type { Subgroup } from './Subgroup.ts'
 
 export type VisualizerType = 'CDElement' | 'MTElement' | 'CGElement'
 export type ConcreteSheetTypes = {
@@ -77,13 +78,21 @@ export interface TextElementJSON extends NodeElementJSON {
    opacity?: float,  // background opacity
    text?: string,
 }
+export interface CaptionJSON {
+   text: html,
+   color?: color,  //background color
+   fontColor?: color,
+   fontSize?: string
+}
 export interface VisualizerElementJSON extends NodeElementJSON {
    // model element contains visualizerJSON (possibly stale)
    // modelElement.viewElement holds the active visualizer object
    visualizerJSON: {
       group_ref: string,
       highlight_colors?: Maybe<color>[][]
-   }
+   },
+   caption?: CaptionJSON,
+   subgroup_index?: integer  //for lattice nodes
 }
 export interface CDElementJSON extends VisualizerElementJSON {
    className: 'CDElement',
@@ -390,7 +399,17 @@ export abstract class VisualizerElement extends NodeElement {
       group_ref: string,
       highlight_colors?: Maybe<color>[][]
    }
+   caption: Maybe<CaptionJSON> = null
+   subgroupIndex: Maybe<integer> = null
    isVisualizer = true
+
+   toJSON (): VisualizerElementJSON {
+      return {
+         ...super.toJSON() as VisualizerElementJSON,
+         ...(this.caption != null && {caption: this.caption}),
+         ...(this.subgroupIndex != null && {subgroup_index: this.subgroupIndex})
+      }
+   }
 
    fromJSON (jsonObject: VisualizerElementJSON) {
       this.group = Library.getGroupByRef(jsonObject.visualizerJSON.group_ref) as Group
@@ -400,7 +419,13 @@ export abstract class VisualizerElement extends NodeElement {
          throw new TypeError(errorMessage)
       }
       super.fromJSON(jsonObject)
+      this.caption = jsonObject.caption ?? null
+      this.subgroupIndex = jsonObject.subgroup_index ?? null
       return this
+   }
+
+   get subgroup (): Maybe<Subgroup> {
+      return (this.subgroupIndex == null) ? null : this.group.subgroups[this.subgroupIndex]
    }
 }
 
@@ -659,6 +684,8 @@ export interface SheetElementRequest {
    // Visualizer
    group_ref?: string,
    highlight_colors?: Maybe<color>[][],
+   caption?: CaptionJSON,
+   subgroup_index?: integer,
 
    // CDElement
    arrow_generators?: ArrowGenerator[],

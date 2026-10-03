@@ -36,6 +36,7 @@ import * as GEUtils from './GEUtils.js'
 import * as SheetModel from './SheetModel.js'
 import * as SheetViewModel from './SheetViewModel.js'
 import * as SheetView from './SheetView.js'
+import * as SubgroupInfo from './SubgroupInfo.js'
 import {TextEditor, ConnectionEditor, MorphismEditor, RemoteEditor} from './SheetModelEditors.js'
 import {
    makeDetachedMenu,
@@ -57,6 +58,11 @@ Top level sheet controller, recognizes top-level user inputs
  */
 export function init (viewModel: SheetViewModel.SheetViewModel, displayElement: HTMLElement) {
    new SheetEventUI(viewModel, displayElement)
+}
+
+//captions point back to their visualizer with data-node-id
+function elementIdOf (domElement: Maybe<Element>): string {
+   return (domElement as Maybe<HTMLElement>)?.dataset.nodeId ?? domElement?.getAttribute('id') ?? ''
 }
 
 class SheetEventUI {
@@ -81,7 +87,7 @@ class SheetEventUI {
          (event: MouseEvent) => {
             const clickedElement = document.elementFromPoint(event.clientX, event.clientY) as Maybe<HTMLElement>
             const selectedNodeOrLink = clickedElement?.closest('.NodeElement, .LinkElement') as Maybe<HTMLElement>
-            const modelElement = this.viewModel.modelElements.get(selectedNodeOrLink?.getAttribute('id') ?? '')
+            const modelElement = this.viewModel.modelElements.get(elementIdOf(selectedNodeOrLink))
             if (modelElement == null)
                return
             if ('isNode' in modelElement) {
@@ -178,7 +184,7 @@ class SheetEventUI {
          (event: MouseEvent) => {
             const selectedElement = document.elementFromPoint(event.clientX, event.clientY) as Maybe<HTMLElement>
             const domElement = selectedElement?.closest('.NodeElement, .LinkElement') as Maybe<HTMLElement>
-            const elementId = domElement?.getAttribute('id')
+            const elementId = elementIdOf(domElement)
             const modelElement = this.viewModel.modelElements.get(elementId ?? '')
             if (modelElement == null) {
                SheetView.redrawAll()
@@ -192,12 +198,19 @@ class SheetEventUI {
 
    // Displays and executes functions from [SheetView](./SheetView.js.md) context menu (right-click/long tap).
    makeContextMenu (modelElement: SheetViewModel.NodeElement, event: MouseEvent) {
+      const subgroup = ('isVisualizer' in modelElement) ? (modelElement as SheetViewModel.VisualizerElement).subgroup : null
       const contextMenuHTML = [
          `<ul id="element-context-menu" data-action="() => void 0">
          <li data-action="this.resizeElement(modelElement)">Resize</li>
          <li data-action="this.getEditor(modelElement, event)">Edit</li>`,
          ('isVisualizer' in modelElement)
             ? '<li data-action="openInfo()">Group Info</li>'
+            : '',
+         (subgroup != null)
+            ? `<hr>
+               <li data-action="this.showSubgroupElements(modelElement, event)">Subgroup Elements</li>
+               <li data-action="this.showSubgroupSheet(modelElement, 'embedding')">Embedding Sheet</li>
+               ${subgroup.isNormal ? `<li data-action="this.showSubgroupSheet(modelElement, 'quotient')">Quotient Sheet</li>` : ''}`
             : '',
          `<li data-action="modelElement.copy()">Copy</li>
          <hr>
@@ -231,7 +244,7 @@ class SheetEventUI {
       recognizeMoveResize (this.rootElement,
          (dx, dy, _dw, _dh, _isDrop, domElement) => {
             if (domElement != null && redrawTimerId == null) {
-               const element = this.viewModel.modelElements.get(domElement.getAttribute('id') as string)
+               const element = this.viewModel.modelElements.get(elementIdOf(domElement))
                const id: Maybe<string> = (element as Maybe<SheetViewModel.NodeElement>)?.anchor_id ?? element?.id
                if (id != null) {
                   redrawTimerId = window.setTimeout(() => {
@@ -293,6 +306,27 @@ class SheetEventUI {
          new MorphismEditor(modelElement as SheetViewModel.MorphismElement, event)
       } else {
          new TextEditor(modelElement as SheetViewModel.TextElement, event)
+      }
+   }
+
+   showSubgroupElements (modelElement: SheetViewModel.VisualizerElement, event: MouseEvent) {
+      const {group, subgroupIndex} = modelElement
+      const H = modelElement.subgroup!
+      const names = H.members.toArray().map((el) => group.representation[el])
+      const html =
+         `<div class="box stack-03em" style="max-width: 30em">
+             <div><i>H</i><sub>${subgroupIndex}</sub> has order ${H.order}${H.isNormal ? ' and is normal' : ''}.</div>
+             <div>{ ${names.join(', ')} }</div>
+          </div>`
+      const dialog = makeDialog(html, event, () => dialog.remove())
+   }
+
+   showSubgroupSheet (modelElement: SheetViewModel.VisualizerElement, kind: 'embedding' | 'quotient') {
+      const type = modelElement.className as SheetModel.VisualizerType
+      if (kind === 'embedding') {
+         SubgroupInfo.showEmbeddingSheet(modelElement.group, modelElement.subgroupIndex!, type)
+      } else {
+         SubgroupInfo.showQuotientSheet(modelElement.group, modelElement.subgroupIndex!, type)
       }
    }
 
@@ -423,7 +457,7 @@ class SheetEventUI {
       source: SheetViewModel.NodeElement,
       maybeTarget: HTMLElement,
    ): Maybe<SheetViewModel.NodeElement> {
-      const maybeDestination = this.viewModel.modelElements.get(maybeTarget.getAttribute('id') ?? '') as SheetViewModel.NodeElement
+      const maybeDestination = this.viewModel.modelElements.get(elementIdOf(maybeTarget)) as SheetViewModel.NodeElement
       return this.viewModel.model.canConnect(linkType, source, maybeDestination) ? maybeDestination : null
    }
 
@@ -444,7 +478,7 @@ class SheetEventUI {
 
    validAnchor (maybeTarget: HTMLElement, source: SheetViewModel.NodeElement): Maybe<SheetViewModel.NodeElement> {
       const maybeDestination =
-         this.viewModel.modelElements.get(maybeTarget.getAttribute('id') ?? '') as Maybe<SheetViewModel.NodeElement>
+         this.viewModel.modelElements.get(elementIdOf(maybeTarget)) as Maybe<SheetViewModel.NodeElement>
       return (maybeDestination != null && 'isNode' in maybeDestination && maybeDestination != source)
          ? maybeDestination
          : null

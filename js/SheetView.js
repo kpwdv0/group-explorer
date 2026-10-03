@@ -317,14 +317,28 @@ export class TextView extends NodeView {
 export class VisualizerView extends NodeView {
     unitSquarePositions;
     lastZoom;
+    captionElement = null;
     _highlightSubscriber;
     constructor(view, modelElement, domElement) {
         super(view, modelElement, domElement);
         this.domElement.classList.add('VisualizerElement');
+        //domElement is a canvas so the caption can't go inside it
+        if (modelElement.caption != null) {
+            const caption = document.createElement('div');
+            caption.dataset.nodeId = modelElement.id;
+            caption.classList.add('NodeElement', 'draggable', 'VisualizerCaption');
+            Object.assign(caption.style, { position: 'absolute', left: '0', top: '0', transformOrigin: 'top left', textAlign: 'center', lineHeight: '1.2' });
+            Graphic.append(caption);
+            this.captionElement = caption;
+        }
     }
     updateTransform() {
         const transformZoom = zoomFactor / this.lastZoom;
         this.domElement.style.transform = makeCssTransform(transformZoom, undefined, modelToDisplay(this.position));
+        if (this.captionElement != null) {
+            const below = this.position.add(new THREE.Vector2(0, this.modelElement.h));
+            this.captionElement.style.transform = makeCssTransform(zoomFactor, undefined, modelToDisplay(below));
+        }
     }
     redraw() {
         this.lastZoom = zoomFactor;
@@ -332,6 +346,28 @@ export class VisualizerView extends NodeView {
         this.visualizer.setSize(this.size.x * zoomFactor, this.size.y * zoomFactor);
         this.visualizer.showGraphic();
         this.unitSquarePositions = this.visualizer.unitSquarePositions();
+        this.drawCaption();
+    }
+    drawCaption() {
+        const caption = this.modelElement.caption;
+        if (this.captionElement != null && caption != null) {
+            this.captionElement.innerHTML = caption.text;
+            this.captionElement.style.width = `${this.modelElement.w}px`;
+            this.captionElement.style.backgroundColor = caption.color ?? 'transparent';
+            this.captionElement.style.color = caption.fontColor ?? 'black';
+            this.captionElement.style.fontSize = caption.fontSize ?? '16px';
+            this.captionElement.style.zIndex = this.modelElement.z.toString();
+        }
+    }
+    updateZ() {
+        super.updateZ();
+        if (this.captionElement != null) {
+            this.captionElement.style.zIndex = this.modelElement.z.toString();
+        }
+    }
+    destroy() {
+        this.captionElement?.remove();
+        super.destroy();
     }
     restoreHighlights(snapshot) {
         this.visualizer.model.highlightColors[0] = snapshot;
@@ -523,6 +559,7 @@ export class CDView extends VisualizerView {
         const context = this.domElement.getContext('2d');
         context.drawImage(this.visualizer.view.canvas, 0, 0);
         this.unitSquarePositions = CDView.sharedViewModel.unitSquarePositions();
+        this.drawCaption();
     }
     restoreHighlights(snapshot) {
         if (CDView.activeView === this && CDView.sharedViewModel != null) {

@@ -32,6 +32,7 @@
 /* global TouchEvent */
 import * as GEUtils from './GEUtils.js';
 import * as SheetView from './SheetView.js';
+import * as SubgroupInfo from './SubgroupInfo.js';
 import { TextEditor, ConnectionEditor, MorphismEditor, RemoteEditor } from './SheetModelEditors.js';
 import { makeDetachedMenu, makeDialog } from './UIComponents.js';
 import { recognizeSelect, recognizeContextMenu, recognizeDragAndDrop, recognizeZoom, recognizeMoveResize } from './Gestures.js';
@@ -43,6 +44,10 @@ Top level sheet controller, recognizes top-level user inputs
  */
 export function init(viewModel, displayElement) {
     new SheetEventUI(viewModel, displayElement);
+}
+//captions point back to their visualizer with data-node-id
+function elementIdOf(domElement) {
+    return domElement?.dataset.nodeId ?? domElement?.getAttribute('id') ?? '';
 }
 class SheetEventUI {
     viewModel;
@@ -63,7 +68,7 @@ class SheetEventUI {
         (event) => {
             const clickedElement = document.elementFromPoint(event.clientX, event.clientY);
             const selectedNodeOrLink = clickedElement?.closest('.NodeElement, .LinkElement');
-            const modelElement = this.viewModel.modelElements.get(selectedNodeOrLink?.getAttribute('id') ?? '');
+            const modelElement = this.viewModel.modelElements.get(elementIdOf(selectedNodeOrLink));
             if (modelElement == null)
                 return;
             if ('isNode' in modelElement) {
@@ -149,7 +154,7 @@ class SheetEventUI {
         recognizeContextMenu(this.rootElement, (event) => {
             const selectedElement = document.elementFromPoint(event.clientX, event.clientY);
             const domElement = selectedElement?.closest('.NodeElement, .LinkElement');
-            const elementId = domElement?.getAttribute('id');
+            const elementId = elementIdOf(domElement);
             const modelElement = this.viewModel.modelElements.get(elementId ?? '');
             if (modelElement == null) {
                 SheetView.redrawAll();
@@ -164,12 +169,19 @@ class SheetEventUI {
     }
     // Displays and executes functions from [SheetView](./SheetView.js.md) context menu (right-click/long tap).
     makeContextMenu(modelElement, event) {
+        const subgroup = ('isVisualizer' in modelElement) ? modelElement.subgroup : null;
         const contextMenuHTML = [
             `<ul id="element-context-menu" data-action="() => void 0">
          <li data-action="this.resizeElement(modelElement)">Resize</li>
          <li data-action="this.getEditor(modelElement, event)">Edit</li>`,
             ('isVisualizer' in modelElement)
                 ? '<li data-action="openInfo()">Group Info</li>'
+                : '',
+            (subgroup != null)
+                ? `<hr>
+               <li data-action="this.showSubgroupElements(modelElement, event)">Subgroup Elements</li>
+               <li data-action="this.showSubgroupSheet(modelElement, 'embedding')">Embedding Sheet</li>
+               ${subgroup.isNormal ? `<li data-action="this.showSubgroupSheet(modelElement, 'quotient')">Quotient Sheet</li>` : ''}`
                 : '',
             `<li data-action="modelElement.copy()">Copy</li>
          <hr>
@@ -199,7 +211,7 @@ class SheetEventUI {
         let redrawTimerId = null;
         recognizeMoveResize(this.rootElement, (dx, dy, _dw, _dh, _isDrop, domElement) => {
             if (domElement != null && redrawTimerId == null) {
-                const element = this.viewModel.modelElements.get(domElement.getAttribute('id'));
+                const element = this.viewModel.modelElements.get(elementIdOf(domElement));
                 const id = element?.anchor_id ?? element?.id;
                 if (id != null) {
                     redrawTimerId = window.setTimeout(() => {
@@ -253,6 +265,25 @@ class SheetEventUI {
         }
         else {
             new TextEditor(modelElement, event);
+        }
+    }
+    showSubgroupElements(modelElement, event) {
+        const { group, subgroupIndex } = modelElement;
+        const H = modelElement.subgroup;
+        const names = H.members.toArray().map((el) => group.representation[el]);
+        const html = `<div class="box stack-03em" style="max-width: 30em">
+             <div><i>H</i><sub>${subgroupIndex}</sub> has order ${H.order}${H.isNormal ? ' and is normal' : ''}.</div>
+             <div>{ ${names.join(', ')} }</div>
+          </div>`;
+        const dialog = makeDialog(html, event, () => dialog.remove());
+    }
+    showSubgroupSheet(modelElement, kind) {
+        const type = modelElement.className;
+        if (kind === 'embedding') {
+            SubgroupInfo.showEmbeddingSheet(modelElement.group, modelElement.subgroupIndex, type);
+        }
+        else {
+            SubgroupInfo.showQuotientSheet(modelElement.group, modelElement.subgroupIndex, type);
         }
     }
     moveForward(modelElement) {
@@ -359,7 +390,7 @@ class SheetEventUI {
         };
     }
     validLinkTarget(linkType, source, maybeTarget) {
-        const maybeDestination = this.viewModel.modelElements.get(maybeTarget.getAttribute('id') ?? '');
+        const maybeDestination = this.viewModel.modelElements.get(elementIdOf(maybeTarget));
         return this.viewModel.model.canConnect(linkType, source, maybeDestination) ? maybeDestination : null;
     }
     makeLink(type, source, destination) {
@@ -370,7 +401,7 @@ class SheetEventUI {
         this.getEditor(link, { clientX: displayPos.x + SheetView.graphicRect.x, clientY: displayPos.y + SheetView.graphicRect.y });
     }
     validAnchor(maybeTarget, source) {
-        const maybeDestination = this.viewModel.modelElements.get(maybeTarget.getAttribute('id') ?? '');
+        const maybeDestination = this.viewModel.modelElements.get(elementIdOf(maybeTarget));
         return (maybeDestination != null && 'isNode' in maybeDestination && maybeDestination != source)
             ? maybeDestination
             : null;

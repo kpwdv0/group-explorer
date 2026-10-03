@@ -5,6 +5,7 @@ import type { CayleyDiagramModelJSON } from './CayleyDiagramModel.js';
 import type { CycleGraphJSON } from './CycleGraphModel.ts';
 import type { Group } from './Group.ts';
 import type { MulttableJSON } from './MulttableModel.ts';
+import type { Subgroup } from './Subgroup.ts';
 export type VisualizerType = 'CDElement' | 'MTElement' | 'CGElement';
 export type ConcreteSheetTypes = {
     TextElement: TextElementJSON;
@@ -60,11 +61,19 @@ export interface TextElementJSON extends NodeElementJSON {
     opacity?: float;
     text?: string;
 }
+export interface CaptionJSON {
+    text: html;
+    color?: color;
+    fontColor?: color;
+    fontSize?: string;
+}
 export interface VisualizerElementJSON extends NodeElementJSON {
     visualizerJSON: {
         group_ref: string;
         highlight_colors?: Maybe<color>[][];
     };
+    caption?: CaptionJSON;
+    subgroup_index?: integer;
 }
 export interface CDElementJSON extends VisualizerElementJSON {
     className: 'CDElement';
@@ -155,8 +164,12 @@ export declare abstract class VisualizerElement extends NodeElement {
         group_ref: string;
         highlight_colors?: Maybe<color>[][];
     };
+    caption: Maybe<CaptionJSON>;
+    subgroupIndex: Maybe<integer>;
     isVisualizer: boolean;
+    toJSON(): VisualizerElementJSON;
     fromJSON(jsonObject: VisualizerElementJSON): this;
+    get subgroup(): Maybe<Subgroup>;
 }
 export declare class CDElement extends VisualizerElement {
     readonly className: keyof ConcreteSheetTypes;
@@ -230,6 +243,8 @@ export interface SheetElementRequest {
     text?: string;
     group_ref?: string;
     highlight_colors?: Maybe<color>[][];
+    caption?: CaptionJSON;
+    subgroup_index?: integer;
     arrow_generators?: ArrowGenerator[];
     diagram_name?: string;
     strategy_parameters?: StrategyParameters[];

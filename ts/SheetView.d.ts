@@ -67,12 +67,16 @@ export declare abstract class VisualizerView extends NodeView {
     domElement: HTMLCanvasElement;
     unitSquarePositions: Array<THREE.Vector2>;
     lastZoom: float;
+    captionElement: Maybe<HTMLElement>;
     protected _highlightSubscriber: Updatable;
     constructor(view: View, modelElement: VisualizerElement, domElement?: HTMLElement);
     abstract get visualizer(): CayleyDiagramViewModel | CycleGraphViewModel | MulttableViewModel;
     abstract updateFromJSON(json: unknown): void;
     updateTransform(): void;
     redraw(): void;
+    protected drawCaption(): void;
+    updateZ(): void;
+    destroy(): void;
     restoreHighlights(snapshot: NonNullable<SheetModel.VisualizerElementJSON['visualizerJSON']['highlight_colors']>[number]): void;
     get highlightModelProxy(): SubscriptionProxy<HighlightControlModelInterface>;
     getVisualizerJSON(): CycleGraphJSON;

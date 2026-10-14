@@ -120,8 +120,14 @@ export class SheetViewModel {
         const element = this.modelElements.get(id);
         if (element == null || !('isNode' in element))
             return;
+        const oldWidth = element.w;
         element.w += dw / this._view.zoomFactor;
         element.h += dh / this._view.zoomFactor;
+        //scale the caption text too, otherwise resizing doesn't help you read it
+        const caption = ('isVisualizer' in element) ? element.caption : null;
+        if (caption?.fontSize != null && oldWidth > 0) {
+            caption.fontSize = `${parseFloat(caption.fontSize) * element.w / oldWidth}px`;
+        }
         this._view.resizeElement(element);
         // reposition anchored elements to stay flush with the bottom edge
         this.modelElements.forEach((el) => {
